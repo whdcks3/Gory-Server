@@ -7,7 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.whdcks3.data.models.Chatroom;
+import com.whdcks3.data.models.chat.Chatroom;
 
 public class UserChatroom {
     @Id

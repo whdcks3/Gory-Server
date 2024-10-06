@@ -11,7 +11,7 @@ import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.common.CommonVO;
-import com.whdcks3.data.models.suqad.Squad;
+import com.whdcks3.data.models.squad.Squad;
 import com.whdcks3.data.models.user.User;
 
 import lombok.AllArgsConstructor;
