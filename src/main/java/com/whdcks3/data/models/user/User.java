@@ -1,7 +1,10 @@
 package com.whdcks3.data.models.user;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -11,8 +14,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.DynamicInsert;
+import org.springframework.format.datetime.DateFormatter;
 
 import com.whdcks3.common.CommonVO;
+import com.whdcks3.data.models.Role;
+import com.whdcks3.data.requests.SignupRequest;
+import com.whdcks3.data.requests.UserModifyRequest;
 import com.whdcks3.enums.ERole;
 
 import lombok.AllArgsConstructor;
@@ -52,9 +59,12 @@ public class User extends CommonVO {
     private String name;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(8) DEFAULT ''")
-    private String ninkname;
+    private String nickname;
 
     private LocalDate birth;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean receiveEvent, alarm;
 
     @Column(nullable = true, columnDefinition = "INT DEFAULT 0")
     private int reportCount;
@@ -67,12 +77,61 @@ public class User extends CommonVO {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_pid"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<ERole> roles;
+    private Set<Role> roles;
 
     @OneToMany(mappedBy = "user")
     private List<UserSquad> squads = new ArrayList<>();
 
     @Column(nullable = true)
     private String firebase;
+
+    public User(SignupRequest req, String password, Role role, String imageUrl, String imagePath) {
+        this.email = req.getEmail();
+        this.password = password;
+        this.snsType = req.getSnsType();
+        this.snsId = req.getSnsId();
+        this.roles = new HashSet<>();
+        this.roles.add(role);
+        this.imageUrl = imageUrl;
+        this.imagePath = imagePath;
+        this.phone = req.getPhone();
+        this.name = req.getName();
+        this.birth = LocalDate.parse(req.getBirth(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+        this.gender = req.getGender();
+        this.receiveEvent = req.getReceiveEvent().equals("true");
+        this.nickname = "";
+    }
+
+    public void update(UserModifyRequest req, String url, String path) {
+        this.introduction = req.getIntroduction();
+        System.out.println("update file");
+        if (req.getImage() != null && !req.getImage().isEmpty()) {
+            deleteImage();
+            this.imageUrl = url;
+            this.imagePath = path;
+        }
+    }
+
+    public void deleteImage() {
+        if (imagePath.contains("avatar_placeholder")) {
+            return;
+        }
+        new File(imagePath).delete();
+    }
+
+    public void setAlarm() {
+        alarm = !alarm;
+    }
+
+    public void increaseReportCount() {
+        this.reportCount++;
+    }
+
+    public Boolean equals(User user) {
+        if (user != null && user.getPid() == getPid()) {
+            return true;
+        }
+        return false;
+    }
 
 }

@@ -20,6 +20,7 @@ import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.common.CommonVO;
 import com.whdcks3.data.models.user.User;
 import com.whdcks3.data.models.user.UserChatroom;
+import com.whdcks3.data.requests.ChatroomRequests;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,5 +60,11 @@ public class Chatroom extends CommonVO {
 
     @OneToMany(mappedBy = "chatroom")
     private List<UserChatroom> users = new ArrayList<>();
+
+    @lombok.Builder
+    public Chatroom(User user, ChatroomRequests req) {
+        this.user = user;
+        this.category = req.getCategory();
+    }
 
 }

@@ -39,4 +39,9 @@ public class AuthCode implements Serializable {
     @NotBlank
     @Size(max = 6)
     private String code;
+
+    public AuthCode(String phone, String code) {
+        this.phone = phone;
+        this.code = code;
+    }
 }
