@@ -1,7 +1,10 @@
 package com.whdcks3.service;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,9 @@ import com.whdcks3.security.service.CustomUserDetails;
 
 @Service
 public class AuthService {
+
+    @Autowired
+    private JavaMailSender javaMailSender;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -50,13 +56,23 @@ public class AuthService {
     // TODO : 회원 정보 가져오기 func
 
     public String getUserSnsType(String email) {
-
-        return "";
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.get().getSnsType();
     }
 
     // TODO : 회원 이메일,코드 검증 func
     public boolean validateUser(String email, String code) {
 
         return true;
+    }
+
+    // TODO : 회원 이메일 보내기
+    public void sendEmail() {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setSubject("테스트 이메일 전송입니다");
+        message.setTo("sj012944@naver.com");
+        message.setText("이게 보이면 잘된거");
+
+        javaMailSender.send(message);
     }
 }

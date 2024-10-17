@@ -26,7 +26,7 @@ public class JwtUtils {
     @Value("${predust.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
-    public static String generateJwtToken(Authentication authentication) {
+    public String generateJwtToken(Authentication authentication) {
         CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
 
         return Jwts.builder()

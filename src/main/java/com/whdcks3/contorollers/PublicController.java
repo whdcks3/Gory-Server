@@ -72,7 +72,8 @@ public class PublicController {
     }
 
     @PostMapping("/find")
-    public ResponseEntity<?> findUser(@RequestParam String email, @RequestParam String code) {
+    public ResponseEntity<?> findUser(@Valid @RequestParam String email, @RequestParam String code) {
+        authService.sendEmail();
         // TODO: 회원가입형태 찾기 컨트롤러
 
         return ResponseEntity.ok().build();
