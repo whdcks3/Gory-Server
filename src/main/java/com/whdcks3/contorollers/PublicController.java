@@ -1,18 +1,24 @@
 package com.whdcks3.contorollers;
 
+import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.whdcks3.common.EmailUtils;
 import com.whdcks3.common.Utils;
 import com.whdcks3.data.requests.SignupRequest;
 import com.whdcks3.data.responses.ErrorResponse;
@@ -28,6 +34,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 public class PublicController {
+
+    @Autowired
+    EmailUtils emailUtils;
+
+    @Autowired
+    JavaMailSender mailsender;
 
     @Autowired
     AuthService authService;
@@ -73,10 +85,14 @@ public class PublicController {
 
     @PostMapping("/find")
     public ResponseEntity<?> findUser(@Valid @RequestParam String email, @RequestParam String code) {
-        authService.sendEmail();
         // TODO: 회원가입형태 찾기 컨트롤러
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/send")
+    public void sendEmail() {
+        authService.sendMmail();
     }
 
 }
