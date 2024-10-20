@@ -42,4 +42,10 @@ public class ReportFeed extends CommonVO {
     @Size(max = 500)
     private String content;
 
+    public ReportFeed(String category, String content, User reporter, Feed feed) {
+        this.category = category;
+        this.content = content;
+        this.reporter = reporter;
+        this.feed = feed;
+    }
 }

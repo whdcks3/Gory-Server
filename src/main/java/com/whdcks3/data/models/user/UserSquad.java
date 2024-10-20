@@ -39,4 +39,10 @@ public class UserSquad {
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean confirmed, denied, banned;
+
+    public UserSquad(User user, Squad squad) {
+        this.user = user;
+        this.squad = squad;
+        this.confirmed = true;
+    }
 }

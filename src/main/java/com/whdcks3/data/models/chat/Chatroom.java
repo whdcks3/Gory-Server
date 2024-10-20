@@ -65,6 +65,39 @@ public class Chatroom extends CommonVO {
     public Chatroom(User user, ChatroomRequests req) {
         this.user = user;
         this.category = req.getCategory();
+        this.content = req.getCategory();
+        this.title = req.getTitle();
+        this.memberCount = req.getMemberCount();
+        this.reportCount = 0;
+        this.currentCount = 1;
+    }
+
+    public void update(ChatroomRequests req) {
+        this.category = req.getCategory();
+        this.content = req.getContent();
+        this.title = req.getTitle();
+        this.memberCount = req.getMemberCount();
+    }
+
+    public boolean isJoining(User user) {
+        for (UserChatroom userChatroom : users) {
+            if (userChatroom.getUser().getPid() == user.getPid() && userChatroom.getConfirmed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void increaseCurrentCount() {
+        this.currentCount++;
+    }
+
+    public void decreaseCurrentCount() {
+        this.currentCount--;
+    }
+
+    public void increaseReportCount() {
+        this.reportCount++;
     }
 
 }

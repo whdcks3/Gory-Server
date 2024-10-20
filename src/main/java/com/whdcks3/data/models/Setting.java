@@ -21,4 +21,9 @@ import lombok.Setter;
 @DynamicInsert
 public class Setting extends CommonVO {
     String privacy, terms;
+
+    public Setting() {
+        privacy = "";
+        terms = "";
+    }
 }

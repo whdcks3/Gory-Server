@@ -1,5 +1,7 @@
 package com.whdcks3.data.models.feed;
 
+import static org.junit.Assert.fail;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +14,7 @@ import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.common.CommonVO;
+import com.whdcks3.data.models.user.User;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,9 +35,21 @@ public class FeedComment extends CommonVO {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_pid", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_pid", nullable = false)
     private String content;
 
     @Column(nullable = true)
     private long feedCommentPid;
+
+    @lombok.Builder
+    public FeedComment(User user, Feed feed, String content, Long feedCommentPid) {
+        this.user = user;
+        this.feed = feed;
+        this.content = content;
+        this.feedCommentPid = feedCommentPid;
+    }
 
 }

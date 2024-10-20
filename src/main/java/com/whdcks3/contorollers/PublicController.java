@@ -91,8 +91,9 @@ public class PublicController {
     }
 
     @GetMapping("/send")
-    public void sendEmail() {
+    public ResponseEntity<?> sendEmail() {
         authService.sendMmail();
+        return ResponseEntity.ok().build();
     }
 
 }

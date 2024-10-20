@@ -41,4 +41,11 @@ public class ReportSquad extends CommonVO {
 
     @Size(max = 500)
     private String content;
+
+    public ReportSquad(String category, String content, User reporter, Squad squad) {
+        this.category = category;
+        this.content = content;
+        this.reporter = reporter;
+        this.suqad = squad;
+    }
 }

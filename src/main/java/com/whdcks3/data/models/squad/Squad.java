@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.common.CommonVO;
 import com.whdcks3.data.models.user.User;
 import com.whdcks3.data.models.user.UserSquad;
+import com.whdcks3.data.requests.SquadRequest;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,4 +58,66 @@ public class Squad extends CommonVO {
     @OneToMany(mappedBy = "squad")
     private List<UserSquad> users = new ArrayList<>();
 
+    @lombok.Builder
+    public Squad(User user, SquadRequest req) {
+        this.user = user;
+        this.category = req.getCategory();
+        this.name = req.getName();
+        this.regionMain = req.getRegionMain();
+        this.regionSub = req.getRegionSub();
+        this.ampm = req.getAmpm();
+        this.gender = req.getGender();
+        this.introduction = req.getIntroduction();
+        this.isTimeSelected = req.getIsTimeSelected();
+        this.shouldBeConfirmed = req.getShouldBeConfirmed();
+        this.memberCount = req.getMemberCount();
+        this.startAge = req.getStartAge();
+        this.endAge = req.getEndAge();
+        this.hour = req.getHour();
+        this.minute = req.getMinute();
+        this.date = req.getDate();
+        this.currentCount = 1;
+    }
+
+    public void update(SquadRequest req) {
+        this.category = req.getCategory();
+        this.name = req.getName();
+        this.regionMain = req.getRegionMain();
+        this.regionSub = req.getRegionSub();
+        this.ampm = req.getAmpm();
+        this.gender = req.getGender();
+        this.introduction = req.getIntroduction();
+        this.isTimeSelected = req.getIsTimeSelected();
+        this.memberCount = req.getMemberCount();
+        this.startAge = req.getStartAge();
+        this.endAge = req.getEndAge();
+        this.hour = req.getHour();
+        this.minute = req.getMinute();
+        this.date = req.getDate();
+    }
+
+    public boolean isJoining(User user) {
+        for (UserSquad userSquad : users) {
+            if (userSquad.getUser().getPid() == user.getPid() && userSquad.getConfirmed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void increaseCurrentCount() {
+        this.currentCount++;
+    }
+
+    public void decreaseCurrentCount() {
+        this.currentCount--;
+    }
+
+    public void increaseReportCount() {
+        this.reportCount++;
+    }
+
+    public boolean checkGender(String gender) {
+        return this.gender.equals("누구나") || this.gender.contains(gender);
+    }
 }

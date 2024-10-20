@@ -69,7 +69,7 @@ public class AuthService {
         return true;
     }
 
-    // TODO : 회원 이메일 보내기
+    // TODO : 회원에게 이메일 보내기
     public void sendMmail() {
         emailUtils.sendEmail("jinmj6446@gmail.com", "테스트 메일", "본문 내용");
         // Properties props = new Properties();

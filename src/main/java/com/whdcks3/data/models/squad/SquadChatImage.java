@@ -1,6 +1,8 @@
 package com.whdcks3.data.models.squad;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,8 +12,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
 
 import org.springframework.format.annotation.DateTimeFormat;
+
+import com.whdcks3.exception.UnSupportedImageFormatException;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -40,4 +45,40 @@ public class SquadChatImage {
 
     @DateTimeFormat(pattern = "yyyy-mm-dd")
     private LocalDate createDate;
+
+    @PrePersist
+    public void createDate() {
+        this.createDate = LocalDate.now();
+    }
+
+    private final static String supportedExtension[] = { "jpg", "jpeg", "gif", "bmp", "png" };
+
+    public SquadChatImage(String originName) {
+        this.originName = originName;
+        this.uniqueName = generateUniqueName(extractExtension(originName));
+    }
+
+    public void initSquadChat(SquadChat squadChat) {
+        if (this.squadChat == null) {
+            this.squadChat = squadChat;
+        }
+    }
+
+    private String generateUniqueName(String extension) {
+        return UUID.randomUUID().toString() + "." + extension;
+    }
+
+    private String extractExtension(String originName) {
+        try {
+            String ext = originName.substring(originName.lastIndexOf(".") + 1);
+            if (isSupportedFormat(ext))
+                return ext;
+        } catch (StringIndexOutOfBoundsException e) {
+        }
+        throw new UnSupportedImageFormatException();
+    }
+
+    private boolean isSupportedFormat(String ext) {
+        return Arrays.stream(supportedExtension).anyMatch(e -> e.equalsIgnoreCase(ext));
+    }
 }

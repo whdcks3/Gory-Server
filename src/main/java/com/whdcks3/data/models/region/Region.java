@@ -34,4 +34,10 @@ public class Region {
     @Column
     private String subRegion;
 
+    private int position;
+
+    public Region(String mainRegion, String subRegion) {
+        this.mainRegion = mainRegion;
+        this.subRegion = subRegion;
+    }
 }

@@ -21,5 +21,5 @@ public class FeedRequest {
     private String category;
     private List<MultipartFile> addedImages = new ArrayList<>();
 
-    private List<Integer> deletedImaged = new ArrayList<>();
+    private List<Integer> deletedImages = new ArrayList<>();
 }

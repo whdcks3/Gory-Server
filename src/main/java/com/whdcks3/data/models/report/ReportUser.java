@@ -41,4 +41,11 @@ public class ReportUser extends CommonVO {
 
     @Size(max = 500)
     private String content;
+
+    public ReportUser(String category, String content, User reporter, User reported) {
+        this.category = category;
+        this.content = content;
+        this.reporter = reporter;
+        this.user = reported;
+    }
 }

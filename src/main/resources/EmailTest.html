@@ -4,13 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>email test</title>
+    <title>메일 발송</title>
 </head>
 
 <body>
-    <button type="button id = mailtest" class="btn btn-info btn-sm" data="placement= bottom" title="메일 테스트">
-        <i class="fa fa-envelope-o" aria hidden="true"></i><span class="text">메일 테스트</span>
-    </button>
+    <h1>메일 발송</h1>
+
+    <form th:action="@{/send}" method="post">
+        <input name="address" placeholder="이메일 주소"> <br>
+        <input name="title" placeholder="제목"> <br>
+        <textarea name="message" placeholder="메일 내용을 입력해주세요." cols="60" rows="20"></textarea>
+        <button>발송</button>
+    </form>
 </body>
 
 </html>
