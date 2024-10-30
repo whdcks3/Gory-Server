@@ -13,7 +13,8 @@
     <form th:action="@{/send}" method="post">
         <input name="email" placeholder="이메일 주소"> <br>
         <input name="title" placeholder="제목"> <br>
-        <textarea name="body" placeholder="메일 내용을 입력해주세요." cols="60" rows="20"></textarea>
+        <textarea name="body" placeholder="메일 내용을 입력해주세요." cols="60" rows="20"></textarea><br>
+        <input type="hidden" name="str" value="str"> <br>
         <button>발송</button>
     </form>
 </body>

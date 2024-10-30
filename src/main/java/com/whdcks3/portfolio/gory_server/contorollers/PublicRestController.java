@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.common.Utils;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
+import com.whdcks3.portfolio.gory_server.data.responses.CommonResponse;
 import com.whdcks3.portfolio.gory_server.data.responses.ErrorResponse;
 import com.whdcks3.portfolio.gory_server.data.responses.JwtResponse;
+import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
@@ -90,13 +92,26 @@ public class PublicRestController {
         return ResponseEntity.ok().build();
     }
 
-    // @PostMapping("/send")
-    // public ResponseEntity<?> sendEmail(@RequestParam String email, @RequestParam
-    // String title,
-    // @RequestParam String body) {
+    // 회원에게 이메일 보내기
+    @PostMapping("/send")
+    public ResponseEntity<?> sendEmail(@RequestParam String email) {
+        authService.sendEmail(email);
+        return ResponseEntity.ok().build();
+    }
 
-    // authService.sendEmail(email, title, body);
-    // return ResponseEntity.ok().build();
-    // }
+    // 회원 이메일,코드 유효성 인증
+    @PostMapping("/validate")
+    public ResponseEntity<?> validatingUser(@RequestParam String email, @RequestParam String code) {
+        try {
+            authService.validateUser(email, code);
+        } catch (ValidationException e) {
+            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
+        }
+        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+    }
 
+    @GetMapping("/activate")
+    public ResponseEntity<?> activateUser(@RequestParam String token) {
+        return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.") : ResponseEntity.badRequest().body("인증 코드가 잘못되었습니다.");
+    }
 }

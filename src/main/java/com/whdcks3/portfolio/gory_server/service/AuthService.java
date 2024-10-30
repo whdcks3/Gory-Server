@@ -1,5 +1,6 @@
 package com.whdcks3.portfolio.gory_server.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,12 +8,16 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
+import com.whdcks3.portfolio.gory_server.data.models.RandomCode;
 import com.whdcks3.portfolio.gory_server.data.models.Role;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
+import com.whdcks3.portfolio.gory_server.exception.ValidationException;
+import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
@@ -22,6 +27,9 @@ import java.util.Random;
 
 @Service
 public class AuthService {
+
+    @Autowired
+    RandomCodeRepository randomCodeRepository;
 
     @Autowired
     EmailUtils emailUtils;
@@ -51,7 +59,10 @@ public class AuthService {
                     imageUrl + imageName,
                     imageFolder + imageName);
             userRepository.save(user);
+            sendActivationEmail(user);
         } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println(e.getLocalizedMessage());
             return false;
         }
 
@@ -64,25 +75,95 @@ public class AuthService {
         return user.get().getSnsType();
     }
 
-    // TODO : 회원 이메일,코드 검증 func
+    // 코드 이메일 검증 및, 인증 유효시간 설정
     public boolean validateUser(String email, String code) {
+        RandomCode randomCode = randomCodeRepository.findByEmail(email);
+        System.out.println(randomCode == null);
+        if (randomCode == null) {
+            throw new ValidationException(200, "이메일이 존재하지 않습니다.");
+        }
+        if (randomCode.isExpired()) {
+            throw new ValidationException(201, "만료된 코드입니다.");
+        }
+        if (!randomCode.getCode().equals(code)) {
+            throw new ValidationException(202, "일치하지 않은 코드입니다.");
+        }
 
         return true;
     }
 
-    // TODO : 회원에게 이메일 보내기
-    public void sendEmail(String email, String title, String body) {
-        emailUtils.sendEmail(email, title, body);
-        // Properties props = new Properties();
-
-        // TODO : 입력받은 이메일에게 랜덤코드 발송하기, 코드인증 유효 시간 설정
-        // 회원가입을 재시도한 회원의 인증코드 존재여부, 메일 인증 링크로 인한 계정 활성화
-
-        String str = String.valueOf(new Random().nextInt() % 999999);
-        System.out.println("code:" + str);
-        str = "*".repeat(6 - str.length()) + str;
-
-        // char[] keys = new char[] {}
+    public void sendActivationEmail(User user) {
+        String activationLink = "http://localhost:3434/activate?token=" + user.getActivationToken();
+        emailUtils.sendEmail(user.getEmail(), "계정 활성화", "다음 링크를 통해 계정을 활성화 해주세요. " + activationLink);
     }
+
+    // TODO : 1시간 이내에 5번이상 인증시 30분 잠금, 회원이 활성화 안되어있을 때 로그인 막기
+    // TODO : 인증메일의 재접근
+
+
+    // 메일 인증 링크로 인한 계정 활성화
+    public boolean activateUser(String token) {
+        return userRepository.findByActivationToken(token)
+            .filter(user -> user.getTokenExpiryDate().isAfter(LocalDateTime.now()))
+            .map(user -> {
+                user.setActive(true);
+                user.setActivationToken(null);
+                user.setTokenExpiryDate(null);
+                userRepository.save(user);
+                return true;
+            })
+            .orElse(false);
+        // String activationLink = "http://localhost:3434/validate?token=" + user.getActivationToken();
+
+        // // builder.queryParam("email", email).queryParam("code", code).build().toUriString();
+
+        // RandomCode storedCode = randomCodeRepository.findByEmail(email);
+        // if (storedCode == null) {
+        //     return "존재하지 않는 코드입니다.";
+        // }
+        // if (storedCode.isExpired()) {
+        //     return " 만료된 코드입니다.";
+        // }
+        // if (!storedCode.getCode().equals(storedCode)) {
+        //     return "코드가 일치하지 않습니다";
+        // }
+
+        // storedCode.isEnabled(true);
+        // randomCodeRepository.save(storedCode);
+
+        // return "코드 인증이 완료되었습니다.";
+    }
+
+    // 회원에게 이메일 보내기
+    public void sendEmail(String email) {
+
+        RandomCode existingCode = randomCodeRepository.findByEmail(email);
+        if (existingCode != null && !existingCode.isExpired()) {
+            System.out.println("이미 코드가 존재합니다" + existingCode.getCode());
+        }
+
+        String code = String.valueOf(Math.abs(new Random().nextInt()) % 999999);
+        code = "*".repeat(6 - code.length()) + code;
+        System.out.println("code:" + code);
+
+        String title = "인증 코드";
+        String body = "인증 코드는: " + code;
+
+        emailUtils.sendEmail(email, title, body);
+
+        System.out.println("생성 코드: " + code);
+
+        RandomCode randomCode = new RandomCode(email, code);
+        randomCodeRepository.save(randomCode);
+    }
+    // char[] keys = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+    // };
+    // String createdKey = "";
+    // int pl = 0;
+    // for (int i = 0; i < 6; i++) {
+    // pl = (int) (Math.random() * keys.length);
+    // createdKey += keys[pl];
+    // }
+    // System.out.println("code:" + createdKey);
 
 }

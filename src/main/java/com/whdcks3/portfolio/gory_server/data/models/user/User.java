@@ -2,11 +2,13 @@ package com.whdcks3.portfolio.gory_server.data.models.user;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -85,6 +87,11 @@ public class User extends CommonVO {
     @Column(nullable = true)
     private String firebase;
 
+    // 계정 활성화용
+    private boolean isActive = false;
+    private String activationToken;
+    private LocalDateTime tokenExpiryDate;
+
     public User(SignupRequest req, String password, Role role, String imageUrl, String imagePath) {
         this.email = req.getEmail();
         this.password = password;
@@ -100,6 +107,8 @@ public class User extends CommonVO {
         this.gender = req.getGender();
         this.receiveEvent = req.getReceiveEvent().equals("true");
         this.nickname = "";
+        this.activationToken = UUID.randomUUID().toString();
+        this.tokenExpiryDate = LocalDateTime.now().plusHours(24);
     }
 
     public void update(UserModifyRequest req, String url, String path) {
