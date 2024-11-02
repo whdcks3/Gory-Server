@@ -100,6 +100,28 @@ public class AuthService {
     // TODO : 1시간 이내에 5번이상 인증시 30분 잠금, 회원이 활성화 안되어있을 때 로그인 막기
     // TODO : 인증메일의 재접근
 
+    // 5번이상 인증 시 30분 잠금
+    public boolean shouldLock(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        if (user.isLocked()) {
+            System.out.println("계정 잠금, 해제 시간 : " + user.getLock());
+            return false;
+        }
+
+        LocalDateTime time = LocalDateTime.now();
+
+        // 1시간 이내 시도 횟수 삭제
+        user.getLoginAttempts().removeIf(attempts -> attempts.isBefore(time.minusHours(1)));
+        // 시도 횟수 추가
+        user.getLoginAttempts().add(time);
+        
+        if (user.getLoginAttempts().size() > 5) {
+            user.setLock(time.plusMinutes(30));
+            System.out.println("계정이 30분 잠겼습니다.");
+        }
+        userRepository.save(user);
+        return true;
+    }
 
     // 메일 인증 링크로 인한 계정 활성화
     public boolean activateUser(String token) {

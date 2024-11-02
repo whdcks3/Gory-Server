@@ -114,4 +114,14 @@ public class PublicRestController {
     public ResponseEntity<?> activateUser(@RequestParam String token) {
         return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.") : ResponseEntity.badRequest().body("인증 코드가 잘못되었습니다.");
     }
+
+    @PostMapping("/multiauth")
+    public ResponseEntity<?> multiAuthentication(@RequestParam String email) {
+        try{
+            authService.shouldLock(email);
+        } catch (ValidationException e) {
+            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
+        }
+        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+    }
 }

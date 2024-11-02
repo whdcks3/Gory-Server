@@ -92,6 +92,14 @@ public class User extends CommonVO {
     private String activationToken;
     private LocalDateTime tokenExpiryDate;
 
+    // 계정 인증메일 기록
+    @ElementCollection
+    private List<LocalDateTime> loginAttempts = new ArrayList<>();
+
+    // 잠금 해제 시간
+    @Column
+    private LocalDateTime lock;
+
     public User(SignupRequest req, String password, Role role, String imageUrl, String imagePath) {
         this.email = req.getEmail();
         this.password = password;
@@ -141,6 +149,10 @@ public class User extends CommonVO {
             return true;
         }
         return false;
+    }
+
+    public boolean isLocked() {
+        return lock != null && lock.isAfter(LocalDateTime.now());
     }
 
 }
