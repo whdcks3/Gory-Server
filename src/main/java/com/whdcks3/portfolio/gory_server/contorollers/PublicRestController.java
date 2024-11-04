@@ -110,14 +110,17 @@ public class PublicRestController {
         return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
+    // 회원 이메일 링크로 인한 활성화
     @GetMapping("/activate")
     public ResponseEntity<?> activateUser(@RequestParam String token) {
-        return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.") : ResponseEntity.badRequest().body("인증 코드가 잘못되었습니다.");
+        return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.")
+                : ResponseEntity.badRequest().body("인증 코드가 잘못되었습니다.");
     }
 
+    // 다중인증(최대 5회) 시 계정 잠금
     @PostMapping("/multiauth")
     public ResponseEntity<?> multiAuthentication(@RequestParam String email) {
-        try{
+        try {
             authService.shouldLock(email);
         } catch (ValidationException e) {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));

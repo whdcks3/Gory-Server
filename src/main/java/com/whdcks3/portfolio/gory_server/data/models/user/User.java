@@ -98,7 +98,7 @@ public class User extends CommonVO {
 
     // 잠금 해제 시간
     @Column
-    private LocalDateTime lock;
+    private LocalDateTime locked;
 
     public User(SignupRequest req, String password, Role role, String imageUrl, String imagePath) {
         this.email = req.getEmail();
@@ -117,6 +117,7 @@ public class User extends CommonVO {
         this.nickname = "";
         this.activationToken = UUID.randomUUID().toString();
         this.tokenExpiryDate = LocalDateTime.now().plusHours(24);
+        this.locked = null;
     }
 
     public void update(UserModifyRequest req, String url, String path) {
@@ -152,7 +153,7 @@ public class User extends CommonVO {
     }
 
     public boolean isLocked() {
-        return lock != null && lock.isAfter(LocalDateTime.now());
+        return locked != null && locked.isAfter(LocalDateTime.now());
     }
 
 }
