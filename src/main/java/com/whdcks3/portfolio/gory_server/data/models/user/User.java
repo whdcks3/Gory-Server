@@ -23,6 +23,7 @@ import com.whdcks3.portfolio.gory_server.data.models.Role;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
+import com.whdcks3.portfolio.gory_server.enums.LockType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -87,18 +88,24 @@ public class User extends CommonVO {
     @Column(nullable = true)
     private String firebase;
 
+    private boolean locked;
+
+    @Enumerated(EnumType.STRING)
+    private LockType lockType;
+
     // 계정 활성화용
-    private boolean isActive = false;
+    // private boolean isActive = false;
     private String activationToken;
     private LocalDateTime tokenExpiryDate;
 
     // 계정 인증메일 기록
     @ElementCollection
-    private List<LocalDateTime> loginAttempts = new ArrayList<>();
+    @CollectionTable(name = "email_auth_attempts", joinColumns = @JoinColumn(name = "email"))
+    private List<LocalDateTime> authAttempts = new ArrayList<>();
 
     // 잠금 해제 시간
     @Column
-    private LocalDateTime locked;
+    private LocalDateTime lockedUntil;
 
     public User(SignupRequest req, String password, Role role, String imageUrl, String imagePath) {
         this.email = req.getEmail();
@@ -117,7 +124,13 @@ public class User extends CommonVO {
         this.nickname = "";
         this.activationToken = UUID.randomUUID().toString();
         this.tokenExpiryDate = LocalDateTime.now().plusHours(24);
-        this.locked = null;
+        this.locked = true;
+        this.lockType = LockType.EMAIL_AUTH;
+        this.authAttempts = new ArrayList<>();
+    }
+
+    public User(String nickname) {
+        this.nickname = nickname;
     }
 
     public void update(UserModifyRequest req, String url, String path) {
@@ -152,8 +165,13 @@ public class User extends CommonVO {
         return false;
     }
 
-    public boolean isLocked() {
-        return locked != null && locked.isAfter(LocalDateTime.now());
+    public void tooManyAttempts(LocalDateTime now) {
+        lockType = LockType.MANY_ATTEMPTS;
+        lockedUntil = now;
+    }
+
+    public boolean isWithinLockedTime() {
+        return lockType.equals(LockType.MANY_ATTEMPTS) && lockedUntil.isAfter(LocalDateTime.now());
     }
 
 }

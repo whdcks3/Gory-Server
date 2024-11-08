@@ -38,8 +38,8 @@ public class CustomUserDetails implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDetails(Long id, String email, String nickname, String password, String phone, String snsType,
-            String snsId,
-            String name, LocalDate birth, Collection<? extends GrantedAuthority> authorities) {
+            String snsId, String name, LocalDate birth,
+            Collection<? extends GrantedAuthority> authorities) {
         this.pid = id;
         this.email = email;
         this.nickname = nickname;
@@ -50,7 +50,6 @@ public class CustomUserDetails implements UserDetails {
         this.name = name;
         this.birth = birth;
         this.authorities = authorities;
-
     }
 
     public static CustomUserDetails build(User user) {

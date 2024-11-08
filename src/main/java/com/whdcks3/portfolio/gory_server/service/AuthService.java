@@ -17,6 +17,7 @@ import com.whdcks3.portfolio.gory_server.data.models.Role;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
+import com.whdcks3.portfolio.gory_server.enums.LockType;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
@@ -101,21 +102,24 @@ public class AuthService {
     // 5번이상 인증 시 30분 잠금
     public boolean shouldLock(String email) {
         User user = userRepository.findByEmail(email).orElseThrow();
-        if (user.isLocked()) {
-            System.out.println("계정 잠금, 해제 시간 : " + user.getLocked());
+        if (user.isWithinLockedTime()) {
+            System.out.println("계정 잠금, 해제 시간 : " + user.getLockedUntil());
             return false;
         }
 
         LocalDateTime time = LocalDateTime.now();
 
         // 1시간 이내 시도 횟수 삭제
-        user.getLoginAttempts().removeIf(attempts -> attempts.isBefore(time.minusHours(1)));
+        user.getAuthAttempts().removeIf(attempts -> attempts.isBefore(time.minusHours(1)));
         // 시도 횟수 추가
-        user.getLoginAttempts().add(time);
+        user.getAuthAttempts().add(time);
 
-        if (user.getLoginAttempts().size() > 5) {
-            user.setLocked(time.plusMinutes(30));
+        if (user.getAuthAttempts().size() > 5) {
+            user.tooManyAttempts(time.plusMinutes(30));
             System.out.println("계정이 30분 잠겼습니다.");
+        } else {
+            user.setLockType(LockType.NONE);
+            user.setLockedUntil(null);
         }
         userRepository.save(user);
         return true;
@@ -126,9 +130,10 @@ public class AuthService {
         return userRepository.findByActivationToken(token)
                 .filter(user -> user.getTokenExpiryDate().isAfter(LocalDateTime.now()))
                 .map(user -> {
-                    user.setActive(true);
+                    user.setLockType(LockType.NONE);
                     user.setActivationToken(null);
                     user.setTokenExpiryDate(null);
+                    user.setLockedUntil(null);
                     userRepository.save(user);
                     return true;
                 })
@@ -190,15 +195,16 @@ public class AuthService {
     // System.out.println("code:" + createdKey);
 
     // 회원이 활성화 안되어있을 때 로그인 막기
-    public boolean forbiddenLogin(String email) {
-        Optional<User> login = userRepository.findByEmail(email);
+    // public boolean forbiddenLogin(String email) {
+    // Optional<User> login = userRepository.findByEmail(email);
 
-        User user = login.get();
+    // User user = login.get();
 
-        if (!user.isActive()) {
-            throw new IllegalTransactionStateException("계정 활성화 되지않음");
-        }
-        return false;
-    }
-    // TODO : 인증 메일의 재접근
+    // if (!user.isActive()) {
+    // return false;
+    // }
+
+    // return false;
+    // }
+
 }
