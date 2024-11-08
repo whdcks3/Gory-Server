@@ -3,6 +3,8 @@ package com.whdcks3.portfolio.gory_server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
 import java.util.Random;
@@ -41,7 +43,16 @@ public class UserService {
     // TODO : 닉네임 기본 생성(완료) , 중복이 있는 닉네임 X, 한글, 영어,숫자인 닉네임
 
     // 중복닉네임 처리
-    public boolean duplicationNickname(String nickname) {
+    public void updateNickname(Long uid, String nickname) {
+        if (duplicationNickname(uid, nickname)) {
+            throw new NicknameDuplicatedException();
+        }
+        User user = userRepository.findById(uid).orElseThrow();
+        user.setNickname(nickname);
+        userRepository.save(user);
+    }
+
+    public boolean duplicationNickname(Long uid, String nickname) {
         return userRepository.existsByNickname(nickname);
     }
 }

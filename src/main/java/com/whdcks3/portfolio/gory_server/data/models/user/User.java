@@ -94,7 +94,7 @@ public class User extends CommonVO {
     private LockType lockType;
 
     // 계정 활성화용
-    // private boolean isActive = false;
+    private boolean isActive = false;
     private String activationToken;
     private LocalDateTime tokenExpiryDate;
 
@@ -124,13 +124,9 @@ public class User extends CommonVO {
         this.nickname = "";
         this.activationToken = UUID.randomUUID().toString();
         this.tokenExpiryDate = LocalDateTime.now().plusHours(24);
-        this.locked = true;
+        this.locked = false;
         this.lockType = LockType.EMAIL_AUTH;
         this.authAttempts = new ArrayList<>();
-    }
-
-    public User(String nickname) {
-        this.nickname = nickname;
     }
 
     public void update(UserModifyRequest req, String url, String path) {
