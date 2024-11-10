@@ -24,6 +24,7 @@ public class CustomerUserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("loadUserByUsername: " + username);
         User user = userRepository.findByEmail(username).orElseThrow();
         if (user.getLockType().equals(LockType.MANY_ATTEMPTS)) {
             String lockedTime = user.getLockedUntil().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 sss초"));

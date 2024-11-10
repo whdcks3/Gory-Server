@@ -15,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -67,9 +68,17 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.out.println("LOGGING filterChain");
         http.cors().and().csrf().disable()
-                .httpBasic().disable()
-                .authorizeRequests().anyRequest().permitAll()
-                .and().formLogin().disable();
+                // .httpBasic().disable()
+                // .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                // .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .authorizeRequests().anyRequest().permitAll();
+        // .authorizeRequests()
+        // .antMatchers("/api/auth/**").permitAll().anyRequest().authenticated();
+
+        http.authenticationProvider(authenticationProvider());
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
         // .sessionManagement(
         // s ->
         // s.sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
@@ -78,18 +87,20 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://gory.limchanghwi.com"));
-        configuration.setAllowedMethods(Arrays.asList("POST", "GET", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-        ;
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    // CorsConfiguration configuration = new CorsConfiguration();
+    // configuration.setAllowedOrigins(Arrays.asList("https://gory.limchanghwi.com"));
+    // configuration.setAllowedMethods(Arrays.asList("POST", "GET", "PUT",
+    // "DELETE"));
+    // configuration.setAllowedHeaders(Arrays.asList("*"));
+    // configuration.setAllowCredentials(true);
+    // configuration.setMaxAge(3600L);
+    // ;
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+    // UrlBasedCorsConfigurationSource source = new
+    // UrlBasedCorsConfigurationSource();
+    // source.registerCorsConfiguration("/**", configuration);
+    // return source;
+    // }
 }

@@ -8,7 +8,7 @@ import com.whdcks3.portfolio.gory_server.data.models.RandomCode;
 
 public interface RandomCodeRepository extends JpaRepository<RandomCode, Long> {
 
-    RandomCode findByEmail(String email);
+    RandomCode findTopByEmailOrderByCreatedDesc(String email);
 
     RandomCode findByCode(String code);
 

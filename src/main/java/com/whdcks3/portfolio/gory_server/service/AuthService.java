@@ -1,11 +1,17 @@
 package com.whdcks3.portfolio.gory_server.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.IllegalTransactionStateException;
@@ -22,10 +28,14 @@ import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
+import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
+import com.whdcks3.portfolio.gory_server.security.service.CustomerUserDetailsServiceImpl;
 
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -42,11 +52,14 @@ public class AuthService {
     @Autowired
     UserRepository userRepository;
 
-    // @Autowired
-    // CustomUserDetails customUserDetails;
+    @Autowired
+    CustomerUserDetailsServiceImpl customUserDetailsServ;
 
     @Autowired
     RoleRepository roleRepository;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     @Value("${upload.image.location}")
     String imageFolder;
@@ -54,13 +67,29 @@ public class AuthService {
     String imageUrl;
 
     public boolean signUp(SignupRequest req) {
+        System.out.println("Start signing up!");
         try {
+            Set<Role> roles = new HashSet<>();
             String imageName = "avatar_placeholder.png";
             Role role = roleRepository.findByName(ERole.ROLE_USER).orElseThrow();
-            User user = new User(req, passwordEncoder.encode(req.getSnsType() + req.getSnsId()), role,
+            roles.add(role);
+            User user = new User(req, passwordEncoder.encode(req.getSnsType() + req.getSnsId()),
                     imageUrl + imageName,
                     imageFolder + imageName);
+            user.setRoles(roles);
             userRepository.save(user);
+            UserDetails userDetails = customUserDetailsServ.loadUserByUsername(req.getEmail());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
+
+            CustomUserDetails userDetailsImpl = (CustomUserDetails) authentication
+                    .getPrincipal();
+            List<String> roles2 = userDetails.getAuthorities().stream().map(i -> i.getAuthority())
+                    .collect(Collectors.toList());
+            System.out.println(jwt + " , " + userDetailsImpl.getPid() + " , " + userDetailsImpl.getUsername() + " , "
+                    + userDetailsImpl.getNickname());
             sendActivationEmail(user);
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,7 +108,7 @@ public class AuthService {
 
     // 코드 이메일 검증 및, 인증 유효시간 설정
     public boolean validateUser(String email, String code) {
-        RandomCode randomCode = randomCodeRepository.findByEmail(email);
+        RandomCode randomCode = randomCodeRepository.findTopByEmailOrderByCreatedDesc(email);
         System.out.println(randomCode == null);
         if (randomCode == null) {
             throw new ValidationException(200, "이메일이 존재하지 않습니다.");
@@ -164,7 +193,7 @@ public class AuthService {
     // 회원에게 이메일 보내기
     public void sendEmail(String email) {
 
-        RandomCode existingCode = randomCodeRepository.findByEmail(email);
+        RandomCode existingCode = randomCodeRepository.findTopByEmailOrderByCreatedDesc(email);
         if (existingCode != null && !existingCode.isExpired()) {
             System.out.println("이미 코드가 존재합니다" + existingCode.getCode());
         }

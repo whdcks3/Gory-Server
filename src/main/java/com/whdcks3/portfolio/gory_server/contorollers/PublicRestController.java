@@ -32,9 +32,12 @@ import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
 
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@RequestMapping("/api/auth")
 public class PublicRestController {
 
     @Autowired
@@ -61,12 +64,14 @@ public class PublicRestController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestParam String email,
             @Valid @RequestParam String snsType, @Valid @RequestParam String snsId) {
+        System.out.println(email + " , " + snsType + " , " + snsId);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, snsType + snsId));
-
+        System.out.println("auth started");
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        System.out.println("start generating token, " + authentication.isAuthenticated());
         String jwt = jwtUtills.generateJwtToken(authentication);
+        System.out.println("jwt: " + jwt);
         // CustomUserDetails customUserDetails = (CustomUserDetails)
         // authentication.getPrincipal();
 
@@ -75,9 +80,10 @@ public class PublicRestController {
         return ResponseEntity.ok(new JwtResponse(jwt, Utils.getNickname()));
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest req) {
-
+    @RequestMapping(value = "/signup", method = RequestMethod.POST)
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
+        System.out.println("signup controller");
+        System.out.println(req);
         if (!authService.signUp(req)) {
             return ResponseEntity.badRequest().body(new ErrorResponse(91, "회원 가입에 오류가 발생했습니다"));
             // return ResponseEntity.badRequest().body("회원 가입에 오류가 발생했습니다");

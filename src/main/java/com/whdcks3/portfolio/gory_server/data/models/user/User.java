@@ -94,7 +94,7 @@ public class User extends CommonVO {
     private LockType lockType;
 
     // 계정 활성화용
-    private boolean isActive = false;
+    // private boolean isActive = false;
     private String activationToken;
     private LocalDateTime tokenExpiryDate;
 
@@ -107,13 +107,11 @@ public class User extends CommonVO {
     @Column
     private LocalDateTime lockedUntil;
 
-    public User(SignupRequest req, String password, Role role, String imageUrl, String imagePath) {
+    public User(SignupRequest req, String password, String imageUrl, String imagePath) {
         this.email = req.getEmail();
         this.password = password;
         this.snsType = req.getSnsType();
         this.snsId = req.getSnsId();
-        this.roles = new HashSet<>();
-        this.roles.add(role);
         this.imageUrl = imageUrl;
         this.imagePath = imagePath;
         this.phone = req.getPhone();

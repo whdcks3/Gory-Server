@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +17,8 @@ import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.service.UserService;
 
 @RestController
-public class UserController {
+@RequestMapping("/api/user")
+public class UserRestController {
 
     @Autowired
     UserService userService;
@@ -24,7 +26,7 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    @GetMapping("/user")
+    @GetMapping("/generate_username")
     public ResponseEntity<?> generateUserName() {
         try {
             userService.generateNickname();
@@ -38,6 +40,12 @@ public class UserController {
     public ResponseEntity<?> checkNickname(Authentication authentication, @RequestParam String nickname) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         userService.updateNickname(userDetails.getPid(), nickname);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("")
+    public ResponseEntity<?> limitName() {
+
         return ResponseEntity.ok().build();
     }
 }
