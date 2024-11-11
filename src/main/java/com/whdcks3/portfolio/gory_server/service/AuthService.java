@@ -78,18 +78,22 @@ public class AuthService {
                     imageFolder + imageName);
             user.setRoles(roles);
             userRepository.save(user);
-            UserDetails userDetails = customUserDetailsServ.loadUserByUsername(req.getEmail());
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                    userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            // UserDetails userDetails =
+            // customUserDetailsServ.loadUserByUsername(req.getEmail());
+            // Authentication authentication = new
+            // UsernamePasswordAuthenticationToken(userDetails, null,
+            // userDetails.getAuthorities());
+            // SecurityContextHolder.getContext().setAuthentication(authentication);
+            // String jwt = jwtUtils.generateJwtToken(authentication);
 
-            CustomUserDetails userDetailsImpl = (CustomUserDetails) authentication
-                    .getPrincipal();
-            List<String> roles2 = userDetails.getAuthorities().stream().map(i -> i.getAuthority())
-                    .collect(Collectors.toList());
-            System.out.println(jwt + " , " + userDetailsImpl.getPid() + " , " + userDetailsImpl.getUsername() + " , "
-                    + userDetailsImpl.getNickname());
+            // CustomUserDetails userDetailsImpl = (CustomUserDetails) authentication
+            // .getPrincipal();
+            // List<String> roles2 = userDetails.getAuthorities().stream().map(i ->
+            // i.getAuthority())
+            // .collect(Collectors.toList());
+            // System.out.println(jwt + " , " + userDetailsImpl.getPid() + " , " +
+            // userDetailsImpl.getUsername() + " , "
+            // + userDetailsImpl.getNickname());
             sendActivationEmail(user);
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,7 +128,7 @@ public class AuthService {
     }
 
     public void sendActivationEmail(User user) {
-        String activationLink = "http://localhost:3434/activate?token=" + user.getActivationToken();
+        String activationLink = "http://localhost:3434/api/auth/activate?token=" + user.getActivationToken();
         emailUtils.sendEmail(user.getEmail(), "계정 활성화", "다음 링크를 통해 계정을 활성화 해주세요. " + activationLink);
     }
 

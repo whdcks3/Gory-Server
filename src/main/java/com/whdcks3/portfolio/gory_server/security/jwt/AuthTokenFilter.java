@@ -33,15 +33,20 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String email = jwtUtils.getUserNameFromJwtToken(jwt);
+
                 UserDetails userdetails = userDetailsServ.loadUserByUsername(email);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userdetails, null, userdetails.getAuthorities());
+
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
             System.err.println(e.getLocalizedMessage());
+            System.err.println("인증 오류 발생!!! : " + e.getLocalizedMessage());
         }
+
+        filterChain.doFilter(request, response);
     }
 
     public String parseJwt(HttpServletRequest req) {

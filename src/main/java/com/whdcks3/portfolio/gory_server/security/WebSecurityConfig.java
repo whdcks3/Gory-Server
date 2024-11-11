@@ -35,8 +35,8 @@ public class WebSecurityConfig {
     @Autowired
     CustomerUserDetailsServiceImpl customerUserDetailsServiceImpl;
 
-    // @Autowired
-    // private AuthEntryPointJwt unauthorizedHandler;
+    @Autowired
+    private AuthEntryPointJwt unauthorizedHandler;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -61,29 +61,32 @@ public class WebSecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        System.out.println("AuthenticationManager 빈 생성");
         return authConfig.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        System.out.println("LOGGING filterChain");
+        System.out.println("LOGGING filterChain started");
         http.cors().and().csrf().disable()
                 // .httpBasic().disable()
-                // .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
-                // .and()
+                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().anyRequest().permitAll();
-        // .authorizeRequests()
-        // .antMatchers("/api/auth/**").permitAll().anyRequest().authenticated();
+                // .authorizeRequests().anyRequest().permitAll();
+                .authorizeRequests()
+                .antMatchers("/api/auth/**").permitAll().anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationJwtTokenFilter(),
+                UsernamePasswordAuthenticationFilter.class);
 
         // .sessionManagement(
         // s ->
         // s.sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
         // .sessionCreationPolicy(SessionCreationPolicy.ALWAYS).maximumSessions(50000000)
         // .maxSessionsPreventsLogin(false).expiredUrl("/"));
+        System.out.println("LOGGING filterChain ended");
         return http.build();
     }
 
