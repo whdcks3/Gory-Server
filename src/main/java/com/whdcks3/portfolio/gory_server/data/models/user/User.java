@@ -78,7 +78,7 @@ public class User extends CommonVO {
     @Column(nullable = false, columnDefinition = "VARCHAR(256) DEFAULT ''")
     private String imageUrl, imagePath, introduction;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_pid"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 

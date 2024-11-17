@@ -3,11 +3,16 @@ package com.whdcks3.portfolio.gory_server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.api.pathtemplate.ValidationException;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
 import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
+import com.whdcks3.portfolio.gory_server.exception.UsernameNotFoundException;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
 import java.util.Random;
+
+import javax.validation.constraints.Pattern;
 
 @Service
 public class UserService {
@@ -54,5 +59,23 @@ public class UserService {
 
     public boolean duplicationNickname(Long uid, String nickname) {
         return userRepository.existsByNickname(nickname);
+    }
+
+    // 이름 형식 제한(영어,한글,2~8글자 이내)
+    public String limitNickname(String nickname) {
+        String regex = "^[a-zA-Z0-9가-힣]{2,8}$";
+        if (!nickname.matches(regex)) {
+            throw new ValidationException("올바르지 않은 형식의 이름입니다");
+        } else {
+            return "올바른 형식의 이름입니다";
+        }
+
+    }
+
+    // 이메일로 sns타입 찾기
+    public String findSnsTypeByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::getSnsType)
+                .orElseThrow(() -> new UsernameNotFoundException("이메일을 찾을 수 없습니다: " + email));
     }
 }
