@@ -3,13 +3,17 @@ package com.whdcks3.portfolio.gory_server.data.requests;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class SignupRequest {
 
     @Size(max = 50)

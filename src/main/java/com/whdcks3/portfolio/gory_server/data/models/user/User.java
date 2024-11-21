@@ -15,6 +15,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.apache.tomcat.jni.Local;
 import org.hibernate.annotations.DynamicInsert;
 import org.springframework.format.datetime.DateFormatter;
 
@@ -106,6 +107,10 @@ public class User extends CommonVO {
     // 잠금 해제 시간
     @Column
     private LocalDateTime lockedUntil;
+
+    // 이메일 인증 링크
+    private String emailLinkToken;
+    private LocalDateTime emailTokenExpiryDate;
 
     public User(SignupRequest req, String password, String imageUrl, String imagePath) {
         this.email = req.getEmail();

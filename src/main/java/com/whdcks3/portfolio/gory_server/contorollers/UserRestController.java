@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.whdcks3.portfolio.gory_server.exception.UsernameNotFoundException;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
+import com.google.rpc.context.AttributeContext.Response;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.responses.CommonResponse;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
@@ -55,14 +56,23 @@ public class UserRestController {
     }
 
     @PostMapping("/find_account")
-    public ResponseEntity<?> getSnsTypeAndEmail(@RequestParam String email) {
+    public ResponseEntity<?> verificationEmail(@RequestParam String email) {
         try {
-            userService.findSnsTypeByEmail(email);
-            return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
-            // return ResponseEntity.ok(snsType);
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            userService.sendEmailLink(email);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("오류 발생");
         }
+        return ResponseEntity.ok("이메일 인증 완료");
+    }
 
+    @PostMapping("/modify_password")
+    public ResponseEntity<?> modifyPassword(@RequestParam String email, @RequestParam String snsType,
+            @RequestParam String snsId, @RequestParam String password) {
+        try {
+            userService.modifyPassword(email, snsType, snsId, password);
+        } catch (ValidationException e) {
+            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
+        }
+        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 }

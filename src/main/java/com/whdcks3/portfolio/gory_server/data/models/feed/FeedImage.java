@@ -21,12 +21,14 @@ import com.whdcks3.portfolio.gory_server.exception.UnSupportedImageFormatExcepti
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Data
+@Getter
 public class FeedImage {
 
     @Id

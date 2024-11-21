@@ -1,17 +1,26 @@
 package com.whdcks3.portfolio.gory_server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.google.api.pathtemplate.ValidationException;
+import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
 import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
 import com.whdcks3.portfolio.gory_server.exception.UsernameNotFoundException;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Random;
+import java.util.UUID;
 
+import javax.transaction.TransactionScoped;
+import javax.transaction.Transactional;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 
 @Service
@@ -19,6 +28,12 @@ public class UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    EmailUtils emailUtils;
+
+    @Autowired
+    JavaMailSender mailSender;
 
     // 기본 닉네임 생성
     public String generateNickname() {
@@ -72,10 +87,21 @@ public class UserService {
 
     }
 
-    // 이메일로 sns타입 찾기
-    public String findSnsTypeByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(User::getSnsType)
-                .orElseThrow(() -> new UsernameNotFoundException("이메일을 찾을 수 없습니다: " + email));
+    // 회원가입에 이메일 인증 링크
+    public void sendEmailLink(String email) {
+        User user = new User();
+        String token = UUID.randomUUID().toString();
+        user.setEmailLinkToken(token);
+        String EmailLink = "http://localhost:3434/api/user/find_account?token=" + user.getEmailLinkToken();
+        emailUtils.sendEmail(email, "이메일 인증", "메일을 클릭해주세요: " + EmailLink);
+    }
+
+    // 패스워드 변경
+    public void modifyPassword(String email, String snsType, String snsId, String password) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        user.setSnsId(snsId);
+        user.setSnsType(snsType);
+        user.setPassword(password);
+        userRepository.save(user);
     }
 }
