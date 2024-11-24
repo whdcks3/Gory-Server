@@ -13,20 +13,18 @@ import com.whdcks3.portfolio.gory_server.data.models.feed.Feed;
 import com.whdcks3.portfolio.gory_server.data.models.feed.FeedImage;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.FeedRequest;
+import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
 import com.whdcks3.portfolio.gory_server.repositories.FeedRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class FeedService {
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    FileService fileService;
+    private FeedRepository feedRepository;
+    private UserRepository userRepository;
+    private FileService fileService;
 
     @Value("${upload.image.location}")
     String imageFolder;
@@ -42,7 +40,7 @@ public class FeedService {
 
         uploadImages(feed.getImages(), req.getAddedImages());
         return FeedSimpleDto.toDto(feed, imageUrl);
-    } // 컨트롤러 테스트, 수정, 작성자와 일치 여부
+    }
 
     private void uploadImages(List<FeedImage> images, List<MultipartFile> fileImages) {
         IntStream.range(0, images.size())
@@ -51,5 +49,12 @@ public class FeedService {
 
     private void deletedImages(List<FeedImage> images) {
         images.forEach(i -> fileService.delete(i.getUniqueName()));
+    }
+
+    // 작성자와 일치 여부
+    public void validateUser(User user, Feed feed) {
+        if (!user.equals(feed.getUser())) {
+            throw new MemberNotEqualsException();
+        }
     }
 }

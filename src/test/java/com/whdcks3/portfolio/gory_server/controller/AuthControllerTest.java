@@ -8,12 +8,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.whdcks3.portfolio.gory_server.contorollers.PublicController;
-import com.whdcks3.portfolio.gory_server.contorollers.PublicRestController;
+import com.whdcks3.portfolio.gory_server.data.models.RandomCode;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
-import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
+import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
 import com.whdcks3.portfolio.gory_server.service.UserService;
@@ -34,15 +32,24 @@ public class AuthControllerTest {
     private AuthService authService;
 
     @Autowired
+    private RandomCodeRepository randomCodeRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     private String token, activateToken;
+
+    private String nickname;
+
+    private RandomCode code;
 
     @BeforeEach
     void setup() {
         // userRepository.deleteAll();
         User user = userRepository.findByEmail("sj012944@gmail.com").get();
         activateToken = user.getActivationToken();
+        nickname = user.getNickname();
+        code = randomCodeRepository.findByCode("sj012944@gmail.com");
         // authService.signUp(
         // new SignupRequest("sj012944@gmail.com", "kakao", "00000", "홍길동",
         // "01012341234", "M", "19970101", "true",
@@ -67,9 +74,45 @@ public class AuthControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void testSend() throws Exception {
+        mockMvc.perform(post("/api/auth/send")
+                .param("email", "sj012944@gamil.com"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testValidate() throws Exception {
+        mockMvc.perform(post("/api/auth/validate")
+                .param("email", "sj012944@gmail.com")
+                .param("code", "799934"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testMultiauth() throws Exception {
+        mockMvc.perform(post("/api/auth/multiauth")
+                .param("email", "sj012944@gmail.com"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUserName() throws Exception {
+        mockMvc.perform(get("/api/user/generate_username"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUpdateNickName() throws Exception {
+        mockMvc.perform(post("/api/user/update_nickname")
+                .param("nickname", "호감가는 새나"))
+                .andExpect(status().isOk());
+    }
+
     @AfterEach
     void end() {
         // userRepository.findAll().get(0).getRoles().clear();
         // userRepository.deleteAll();
     }
+
 }

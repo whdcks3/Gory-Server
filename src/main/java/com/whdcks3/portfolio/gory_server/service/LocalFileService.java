@@ -5,10 +5,10 @@ import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.api.client.util.Value;
 import com.whdcks3.portfolio.gory_server.exception.FileUploadFailureException;
 
 @Service
