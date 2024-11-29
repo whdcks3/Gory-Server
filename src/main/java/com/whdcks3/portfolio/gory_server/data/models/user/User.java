@@ -89,8 +89,6 @@ public class User extends CommonVO {
     @Column(nullable = true)
     private String firebase;
 
-    private boolean locked;
-
     @Enumerated(EnumType.STRING)
     private LockType lockType;
 
@@ -127,7 +125,6 @@ public class User extends CommonVO {
         this.nickname = "";
         this.activationToken = UUID.randomUUID().toString();
         this.tokenExpiryDate = LocalDateTime.now().plusHours(24);
-        this.locked = false;
         this.lockType = LockType.EMAIL_AUTH;
         this.authAttempts = new ArrayList<>();
     }

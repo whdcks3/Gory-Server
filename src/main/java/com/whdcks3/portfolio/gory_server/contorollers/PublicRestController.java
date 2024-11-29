@@ -96,6 +96,13 @@ public class PublicRestController {
     }
 
     // 회원에게 이메일 보내기
+    @PostMapping("/resend-token")
+    public ResponseEntity<?> resendActivationToken(@RequestParam String email) {
+        authService.resendActivationToken(email);
+        return ResponseEntity.ok().build();
+    }
+
+    // 회원에게 이메일 보내기
     @PostMapping("/send")
     public ResponseEntity<?> sendEmail(@RequestParam String email) {
         authService.sendEmail(email);

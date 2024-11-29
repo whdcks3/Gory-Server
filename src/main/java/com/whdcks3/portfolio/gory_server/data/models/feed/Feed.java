@@ -53,7 +53,7 @@ public class Feed extends CommonVO {
     private List<FeedImage> images;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "feed", targetEntity = FeedComment.class, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "feed", targetEntity = FeedComment.class, cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<FeedComment> comments = new ArrayList<>();
 
     @Column(nullable = true, columnDefinition = "INT DEFAULT 0")

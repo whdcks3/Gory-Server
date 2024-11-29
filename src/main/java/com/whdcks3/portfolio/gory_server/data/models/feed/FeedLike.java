@@ -31,4 +31,5 @@ public class FeedLike extends CommonVO {
     @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
     @JoinColumn(name = "user_pid", nullable = false)
     private User user;
+
 }

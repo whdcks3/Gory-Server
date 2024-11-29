@@ -1,4 +1,4 @@
-package com.whdcks3.portfolio.gory_server.data.models.report;
+package com.whdcks3.portfolio.gory_server.data.models.feed;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,7 +11,6 @@ import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.CommonVO;
-import com.whdcks3.portfolio.gory_server.data.models.feed.Feed;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.AllArgsConstructor;

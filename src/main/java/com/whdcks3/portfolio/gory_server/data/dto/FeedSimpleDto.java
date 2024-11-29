@@ -19,15 +19,16 @@ public class FeedSimpleDto {
     private String category;
     private String content;
     private List<String> images;
+    private boolean like;
     private String datetime; // 2024-11-21T14:14:00
 
-    public static FeedSimpleDto toDto(Feed feed, String url) {
+    public static FeedSimpleDto toDto(Feed feed, String url, boolean isLike) {
         String nickname = feed.getUser().getNickname();
         String category = feed.getCategory();
         String content = feed.getContent();
         List<String> images = feed.getImages().stream().map(image -> url + image.getUniqueName()).toList();
         String datetime = feed.getRegDt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        return new FeedSimpleDto(nickname, category, content, images, datetime);
+        return new FeedSimpleDto(nickname, category, content, images, isLike, datetime);
     }
 }

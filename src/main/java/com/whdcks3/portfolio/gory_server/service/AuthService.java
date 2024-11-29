@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.IllegalTransactionStateException;
@@ -216,6 +218,20 @@ public class AuthService {
         RandomCode randomCode = new RandomCode(email, code);
 
         randomCodeRepository.save(randomCode);
+    }
+
+    public void resendActivationToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("찾을 수 없는 계정입니다."));
+        if (user.getLockType().equals(LockType.NONE)) {
+            throw new IllegalStateException("이미 활성화된 계정입니다.");
+        }
+
+        String newToken = UUID.randomUUID().toString();
+        user.setActivationToken(newToken);
+        user.setTokenExpiryDate(LocalDateTime.now().plusHours(24));
+        user = userRepository.save(user);
+        ;
     }
     // char[] keys = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
     // };
