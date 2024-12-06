@@ -2,12 +2,24 @@ package com.whdcks3.portfolio.gory_server.repositories;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import com.whdcks3.portfolio.gory_server.data.models.feed.Feed;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
+@Repository
 public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     List<Feed> findAllByUserOrderByRegDtDesc(User user);
+
+    List<Feed> findAllByOrderByRegDtDesc();
+
+    List<Feed> findAllByCategoryOrderByRegDtDesc(String category);
+
+    Page<Feed> findAllByCategory(String category, Pageable pageable);
+
+    Page<Feed> findAll(Pageable pageable);
 }

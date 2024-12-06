@@ -5,6 +5,8 @@ import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,10 +29,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class FeedService {
-    private FeedRepository feedRepository;
-    private UserRepository userRepository;
-    private FileService fileService;
-    private FeedLikeRespository feedLikeRespository;
+    private final FeedRepository feedRepository;
+    private final UserRepository userRepository;
+    private final FileService fileService;
+    private final FeedLikeRespository feedLikeRespository;
 
     @Value("${upload.image.location}")
     String imageFolder;
@@ -66,13 +68,40 @@ public class FeedService {
         validateUser(user, feed);
         feedRepository.delete(feed);
     }
-
+    // Feed fetch
     // TO DO : 상대방 피드 가져오기(otherFeeds/id), 전체 피드 가져오기(home)
 
-    public FeedSimpleDto othersFeed(Long userId, Long feedId, Long othersFeedId) {
-        return new FeedSimpleDto(imageFolder, imageFolder, imageUrl, null, false, imageFolder);
+    public DataResponse othersFeed(Long userId, Long otherId, int page) {
+        User other = userRepository.findById(otherId).orElseThrow(null);
+        User user = userRepository.findById(userId).orElseThrow(null);
+        List<Feed> feeds = feedRepository.findAllByUserOrderByRegDtDesc(other);
+        boolean hasNext = ((long) Math.ceil((double) feeds.size() / 20)) > page + 1;
+        List<FeedSimpleDto> feedDtos = feeds.stream().skip(page * 20).limit(20)
+                .map(f -> FeedSimpleDto.toDto(f, imageUrl, hasFeedLike(user, f))).toList();
+        return new DataResponse(hasNext, feedDtos);
     }
-    // Feed fetch
+
+    // public DataResponse feeds(User user, int page, String category) {
+    public DataResponse feeds(User user, Pageable pageable, String category) {
+        Page<Feed> feeds;
+        // if (category.equals("전체")) {
+        // // category = "";
+        // feeds = feedRepository.findAllByOrderByRegDtDesc();
+        // } else {
+        // feeds = feedRepository.findAllByCategoryOrderByRegDtDesc(category);
+        // }
+        if (category.equals("전체")) {
+            // category = "";
+            feeds = feedRepository.findAll(pageable);
+        } else {
+            feeds = feedRepository.findAllByCategory(category, pageable);
+        }
+        boolean hasNext = feeds.hasNext();
+        // boolean hasNext = ((long) Math.ceil((double) feeds.size() / 20)) > page + 1;
+        List<FeedSimpleDto> feedDtos = feeds.getContent().stream()
+                .map(f -> FeedSimpleDto.toDto(f, imageUrl, hasFeedLike(user, f))).toList();
+        return new DataResponse(hasNext, feedDtos);
+    }
 
     public DataResponse myFeeds(Long userId, int page) {
         User user = userRepository.findById(userId).orElseThrow(null);

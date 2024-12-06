@@ -79,7 +79,10 @@ public class WebSecurityConfig {
                 // .authorizeRequests().anyRequest().permitAll();
                 .authorizeRequests() // 요청별 인증 규칙
                 // /api/auth/**는 인증 없이 접근 가능, 나머지 요청은 인증 필요
-                .antMatchers("/api/auth/**", "/api/user/**").permitAll().anyRequest().authenticated();
+                .antMatchers("/api/auth/**", "/api/user/**", "/api/feed/**", "/swagger-ui/**", "/webjars/**",
+                        "/swagger-ui.html", "/v3/api-docs/**")
+                .permitAll().anyRequest()
+                .authenticated();
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(),

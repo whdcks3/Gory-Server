@@ -31,11 +31,15 @@ import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 // @CrossOrigin(origins = "*", maxAge = 3600)
+@Tag(name = "Authentication", description = "회원 인증 및 회원가입 등")
 @RestController
 @RequestMapping("/api/auth")
 public class PublicRestController {
@@ -58,6 +62,7 @@ public class PublicRestController {
     @Autowired
     JwtUtils jwtUtills;
 
+    @Operation(summary = "회원가입", description = "사용자 회원가입 API")
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestParam String email,
             @Valid @RequestParam String snsType, @Valid @RequestParam String snsId) {
