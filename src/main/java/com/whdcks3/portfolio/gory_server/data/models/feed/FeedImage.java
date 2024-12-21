@@ -16,6 +16,7 @@ import javax.persistence.PrePersist;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.exception.UnSupportedImageFormatException;
 
 import lombok.AccessLevel;
@@ -29,35 +30,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Getter
-public class FeedImage {
+public class FeedImage extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(nullable = false)
-    private String uniqueName;
-
-    @Column(nullable = false)
-    private String originName;
+    @Column(nullable = false, length = 255)
+    private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_pid", nullable = false)
     private Feed feed;
 
-    @DateTimeFormat(pattern = "yyyy-mm--dd")
-    private LocalDate createDate;
-
-    @PrePersist
-    public void createDate() {
-        this.createDate = LocalDate.now();
-    }
-
     private final static String supportedExtension[] = { "jpg", "jpeg", "gif", "bmp", "png" };
 
     public FeedImage(String originName) {
-        this.originName = originName;
-        this.uniqueName = generateUniqueName(extractExtension(originName));
+        this.imageUrl = generateUniqueName(extractExtension(originName));
     }
 
     public void initFeed(Feed feed) {
@@ -72,7 +57,9 @@ public class FeedImage {
 
     private String extractExtension(String originName) {
         try {
-            String ext = originName.substring(originName.lastIndexOf(".")) + 1;
+            System.out.println("originName: " + originName);
+            String ext = originName.substring(originName.lastIndexOf(".") + 1);
+            System.out.println("originName: " + originName + " , ext: " + ext);
             if (isSupportedFormat(ext))
                 return ext;
         } catch (StringIndexOutOfBoundsException e) {

@@ -1,18 +1,15 @@
-package com.whdcks3.portfolio.gory_server.contorollers;
+package com.whdcks3.portfolio.gory_server.controllers;
 
-import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +25,6 @@ import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
-import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,6 +48,12 @@ public class PublicRestController {
 
     @Autowired
     AuthService authService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     RoleRepository roleRepository;
@@ -82,6 +84,16 @@ public class PublicRestController {
         return ResponseEntity.ok(new JwtResponse(jwt, Utils.getNickname()));
     }
 
+    @PostMapping("/repassword")
+    public ResponseEntity<?> rePassword(@RequestParam String email, @RequestParam String rawPassword) {
+        try {
+            authService.resetPassword(email, rawPassword);
+        } catch (ValidationException e) {
+            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
+        }
+        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+    }
+
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
         System.out.println("signup controller");
@@ -93,14 +105,7 @@ public class PublicRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/find")
-    public ResponseEntity<?> findUser(@Valid @RequestParam String email, @RequestParam String code) {
-        // TODO: 회원가입형태 찾기 컨트롤러
-
-        return ResponseEntity.ok().build();
-    }
-
-    // 회원에게 이메일 보내기
+    // 회원에게 활성화이메일 보내기
     @PostMapping("/resend-token")
     public ResponseEntity<?> resendActivationToken(@RequestParam String email) {
         authService.resendActivationToken(email);
@@ -125,11 +130,11 @@ public class PublicRestController {
         return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
-    // 회원 이메일 링크로 인한 활성화
+    // 회원 토큰으로 인한 활성화
     @GetMapping("/activate")
     public ResponseEntity<?> activateUser(@RequestParam String token) {
         return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.")
-                : ResponseEntity.badRequest().body("인증 코드가 잘못되었습니다.");
+                : ResponseEntity.badRequest().body("인증 토큰이 잘못되었습니다.");
     }
 
     // 다중인증(최대 5회) 시 계정 잠금

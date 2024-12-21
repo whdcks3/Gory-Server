@@ -22,12 +22,12 @@ public class FeedSimpleDto {
     private boolean like;
     private String datetime; // 2024-11-21T14:14:00
 
-    public static FeedSimpleDto toDto(Feed feed, String url, boolean isLike) {
+    public static FeedSimpleDto toDto(Feed feed, boolean isLike) {
         String nickname = feed.getUser().getNickname();
         String category = feed.getCategory();
         String content = feed.getContent();
-        List<String> images = feed.getImages().stream().map(image -> url + image.getUniqueName()).toList();
-        String datetime = feed.getRegDt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        List<String> images = feed.getImages().stream().map(image -> image.getImageUrl()).toList();
+        String datetime = feed.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         return new FeedSimpleDto(nickname, category, content, images, isLike, datetime);
     }

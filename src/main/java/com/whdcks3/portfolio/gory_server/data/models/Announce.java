@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @DynamicInsert
-public class Announce extends CommonVO {
+public class Announce extends BaseEntity {
     private String title;
 
     @Column(columnDefinition = "TEXT", nullable = false)

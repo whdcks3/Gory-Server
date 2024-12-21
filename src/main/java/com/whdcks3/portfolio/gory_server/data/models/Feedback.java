@@ -3,11 +3,11 @@ package com.whdcks3.portfolio.gory_server.data.models;
 import javax.persistence.Column;
 import javax.validation.constraints.Size;
 
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 
 import lombok.Builder;
 
-public class Feedback extends CommonVO {
+public class Feedback extends BaseEntity {
 
     private String namenickname;
 

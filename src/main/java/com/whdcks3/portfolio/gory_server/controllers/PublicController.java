@@ -1,4 +1,4 @@
-package com.whdcks3.portfolio.gory_server.contorollers;
+package com.whdcks3.portfolio.gory_server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

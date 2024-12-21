@@ -3,10 +3,12 @@ package com.whdcks3.portfolio.gory_server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.api.pathtemplate.ValidationException;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
+import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
 import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
@@ -34,6 +36,9 @@ public class UserService {
 
     @Autowired
     JavaMailSender mailSender;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     // 기본 닉네임 생성
     public String generateNickname() {
@@ -89,19 +94,25 @@ public class UserService {
 
     // 회원가입에 이메일 인증 링크
     public void sendEmailLink(String email) {
-        User user = new User();
+        EmailVerification verificationToken = new EmailVerification();
         String token = UUID.randomUUID().toString();
-        user.setEmailLinkToken(token);
-        String EmailLink = "http://localhost:3434/api/user/find_account?token=" + user.getEmailLinkToken();
+        verificationToken.setToken(token);
+        String EmailLink = "http://localhost:3434/api/user/find_account?token=" + verificationToken.getToken();
         emailUtils.sendEmail(email, "이메일 인증", "메일을 클릭해주세요: " + EmailLink);
     }
 
     // 패스워드 변경
     public void modifyPassword(String email, String snsType, String snsId, String password) {
         User user = userRepository.findByEmail(email).orElseThrow();
+        String encoded = passwordEncoder.encode(password);
         user.setSnsId(snsId);
         user.setSnsType(snsType);
-        user.setPassword(password);
+        user.setPassword(encoded);
+        userRepository.save(user);
+    }
+
+    public void updateFcm(User user, String fcmToken) {
+        user.setFcmToken(fcmToken);
         userRepository.save(user);
     }
 }

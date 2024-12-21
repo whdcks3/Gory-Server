@@ -13,18 +13,21 @@ import java.util.UUID;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 
 import org.apache.tomcat.jni.Local;
 import org.hibernate.annotations.DynamicInsert;
 import org.springframework.format.datetime.DateFormatter;
 
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.Role;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
+import com.whdcks3.portfolio.gory_server.enums.OAuthProvider;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +43,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
-public class User extends CommonVO {
+public class User extends BaseEntity {
     @NotBlank
     @Size(max = 50)
     @Email
@@ -57,6 +60,12 @@ public class User extends CommonVO {
     @Size(max = 120)
     private String snsId;
 
+    // @Enumerated(EnumType.STRING)
+    // @Column(nullable = false)
+    // private OAuthProvider oauthProvider;
+
+    private String carrier;
+
     @Size(max = 20)
     private String phone;
 
@@ -68,7 +77,7 @@ public class User extends CommonVO {
     private LocalDate birth;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private Boolean receiveEvent, alarm;
+    private Boolean receiveEvent, feedAlarm, feedLikeAlarm;
 
     @Column(nullable = true, columnDefinition = "INT DEFAULT 0")
     private int reportCount;
@@ -77,7 +86,7 @@ public class User extends CommonVO {
     private String gender;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(256) DEFAULT ''")
-    private String imageUrl, imagePath, introduction;
+    private String imageUrl, introduction;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_pid"), inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -87,15 +96,10 @@ public class User extends CommonVO {
     private List<UserSquad> squads = new ArrayList<>();
 
     @Column(nullable = true)
-    private String firebase;
+    private String fcmToken;
 
     @Enumerated(EnumType.STRING)
     private LockType lockType;
-
-    // 계정 활성화용
-    // private boolean isActive = false;
-    private String activationToken;
-    private LocalDateTime tokenExpiryDate;
 
     // 계정 인증메일 기록
     @ElementCollection
@@ -106,25 +110,19 @@ public class User extends CommonVO {
     @Column
     private LocalDateTime lockedUntil;
 
-    // 이메일 인증 링크
-    private String emailLinkToken;
-    private LocalDateTime emailTokenExpiryDate;
-
-    public User(SignupRequest req, String password, String imageUrl, String imagePath) {
+    public User(SignupRequest req, String password, String imageUrl) {
         this.email = req.getEmail();
         this.password = password;
         this.snsType = req.getSnsType();
         this.snsId = req.getSnsId();
         this.imageUrl = imageUrl;
-        this.imagePath = imagePath;
         this.phone = req.getPhone();
+        this.carrier = req.getCarrier();
         this.name = req.getName();
         this.birth = LocalDate.parse(req.getBirth(), DateTimeFormatter.ofPattern("yyyyMMdd"));
         this.gender = req.getGender();
         this.receiveEvent = req.getReceiveEvent().equals("true");
         this.nickname = "";
-        this.activationToken = UUID.randomUUID().toString();
-        this.tokenExpiryDate = LocalDateTime.now().plusHours(24);
         this.lockType = LockType.EMAIL_AUTH;
         this.authAttempts = new ArrayList<>();
     }
@@ -135,19 +133,19 @@ public class User extends CommonVO {
         if (req.getImage() != null && !req.getImage().isEmpty()) {
             deleteImage();
             this.imageUrl = url;
-            this.imagePath = path;
         }
     }
 
     public void deleteImage() {
-        if (imagePath.contains("avatar_placeholder")) {
+        if (imageUrl.contains("avatar_placeholder")) {
             return;
         }
-        new File(imagePath).delete();
+        // TODO: delete profile image
+        // new File(imageUrl).delete();
     }
 
     public void setAlarm() {
-        alarm = !alarm;
+        feedAlarm = !feedAlarm;
     }
 
     public void increaseReportCount() {

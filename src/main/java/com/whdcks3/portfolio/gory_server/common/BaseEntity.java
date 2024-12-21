@@ -21,7 +21,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public abstract class CommonVO implements Serializable {
+public abstract class BaseEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public abstract class CommonVO implements Serializable {
     @CreationTimestamp
     @Column(nullable = false, name = "reg_dt", updatable = false)
     @ColumnDefault("current_timestamp")
-    private LocalDateTime regDt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(length = 20)

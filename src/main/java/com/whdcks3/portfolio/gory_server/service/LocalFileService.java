@@ -2,6 +2,10 @@ package com.whdcks3.portfolio.gory_server.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -17,27 +21,28 @@ public class LocalFileService implements FileService {
     @Value("${upload.image.location}")
     String location;
 
-    @PostConstruct
-    void postConstruct() {
-        File dir = new File(location);
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-    }
-
     @Override
-    public void upload(MultipartFile file, String fileName) {
+    public String upload(MultipartFile file) {
         try {
-            file.transferTo(new File(location + fileName));
+            String filename = UUID.randomUUID().toString();
+            Path filePath = Paths.get(location, filename);
+
+            Files.createDirectories(filePath.getParent());
+            file.transferTo(filePath.toFile());
+            return filename;
         } catch (IOException e) {
             throw new FileUploadFailureException(e);
         }
-
     }
 
     @Override
     public void delete(String fileName) {
-        new File(location + fileName).delete();
+        try {
+            Path filePath = Paths.get(location, fileName);
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new FileUploadFailureException(e);
+        }
 
     }
 }

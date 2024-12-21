@@ -1,7 +1,10 @@
 package com.whdcks3.portfolio.gory_server.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,15 +14,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.whdcks3.portfolio.gory_server.data.dto.FeedLikeDto;
 import com.whdcks3.portfolio.gory_server.data.dto.FeedSimpleDto;
+import com.whdcks3.portfolio.gory_server.data.models.Block;
 import com.whdcks3.portfolio.gory_server.data.models.feed.Feed;
+import com.whdcks3.portfolio.gory_server.data.models.feed.FeedComment;
 import com.whdcks3.portfolio.gory_server.data.models.feed.FeedImage;
 import com.whdcks3.portfolio.gory_server.data.models.feed.FeedLike;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.data.requests.FeedCommentRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.FeedRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.DataResponse;
 import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
+import com.whdcks3.portfolio.gory_server.firebase.FirebasePublisherUtil;
+import com.whdcks3.portfolio.gory_server.repositories.BlockRespository;
+import com.whdcks3.portfolio.gory_server.repositories.FeedCommentRepository;
+import com.whdcks3.portfolio.gory_server.repositories.FeedImageRepository;
 import com.whdcks3.portfolio.gory_server.repositories.FeedLikeRespository;
 import com.whdcks3.portfolio.gory_server.repositories.FeedRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
@@ -30,85 +41,86 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class FeedService {
     private final FeedRepository feedRepository;
+    private final FeedImageRepository feedImageRepository;
     private final UserRepository userRepository;
     private final FileService fileService;
     private final FeedLikeRespository feedLikeRespository;
-
-    @Value("${upload.image.location}")
-    String imageFolder;
-
-    @Value("${get.image.location}")
-    String imageUrl;
+    private final FeedCommentRepository feedCommentRepository;
+    private final FirebasePublisherUtil firebasePublisherUtil;
+    private final BlockRespository blockRespository;
 
     // Feed CUD
 
-    public FeedSimpleDto createFeed(FeedRequest req, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(null);
+    public FeedSimpleDto createFeed(FeedRequest req, User user) {
         List<FeedImage> images = req.getAddedImages().stream().map(image -> new FeedImage(image.getOriginalFilename()))
                 .toList();
         Feed feed = feedRepository.save(new Feed(user, req, images));
-
-        uploadImages(feed.getImages(), req.getAddedImages());
-        return FeedSimpleDto.toDto(feed, imageUrl, false);
+        if (req.getAddedImages() != null) {
+            saveFeedImages(feed, req.getAddedImages());
+        }
+        return FeedSimpleDto.toDto(feed, false);
     }
 
-    public FeedSimpleDto updateFeed(FeedRequest req, Long userId, Long feedId) {
-        User user = userRepository.findById(userId).orElseThrow(null);
+    public FeedSimpleDto updateFeed(FeedRequest req, User user, Long feedId) {
         Feed feed = feedRepository.findById(feedId).orElseThrow(null);
         validateUser(user, feed);
-        Feed.ImageUpdatedResult result = feed.update(req);
-        deletedImages(result.getDeletedImages());
-        return FeedSimpleDto.toDto(feed, imageUrl, hasFeedLike(user, feed));
+        if (req.getDeletedImages() != null) {
+            deleteImages(req.getDeletedImages());
+        }
+        if (req.getAddedImages() != null) {
+            saveFeedImages(feed, req.getAddedImages());
+        }
+        return FeedSimpleDto.toDto(feed, hasFeedLike(user, feed));
     }
 
     @Transactional
-    public void deleteFeed(Long userId, Long feedId) {
-        User user = userRepository.findById(userId).orElseThrow(null);
+    public void deleteFeed(User user, Long feedId) {
         Feed feed = feedRepository.findById(feedId).orElseThrow(null);
         validateUser(user, feed);
+        List<FeedImage> images = feedImageRepository.findByFeed(feed);
+        images.forEach(image -> {
+            fileService.delete(image.getImageUrl());
+            feedImageRepository.delete(image);
+        });
         feedRepository.delete(feed);
     }
     // Feed fetch
-    // TO DO : 상대방 피드 가져오기(otherFeeds/id), 전체 피드 가져오기(home)
 
     public DataResponse othersFeed(Long userId, Long otherId, int page) {
         User other = userRepository.findById(otherId).orElseThrow(null);
         User user = userRepository.findById(userId).orElseThrow(null);
-        List<Feed> feeds = feedRepository.findAllByUserOrderByRegDtDesc(other);
-        boolean hasNext = ((long) Math.ceil((double) feeds.size() / 20)) > page + 1;
+        Page<Feed> feeds = feedRepository.findByUser(other);
+        boolean hasNext = ((long) Math.ceil((double) feeds.getSize() / 20)) > page + 1;
         List<FeedSimpleDto> feedDtos = feeds.stream().skip(page * 20).limit(20)
-                .map(f -> FeedSimpleDto.toDto(f, imageUrl, hasFeedLike(user, f))).toList();
+                .map(f -> FeedSimpleDto.toDto(f, hasFeedLike(user, f))).toList();
         return new DataResponse(hasNext, feedDtos);
     }
 
     // public DataResponse feeds(User user, int page, String category) {
-    public DataResponse feeds(User user, Pageable pageable, String category) {
+    public DataResponse homeFeed(User user, Pageable pageable, String category) {
+        List<User> excludedUsers = new ArrayList<>();
+        if (user != null) {
+            excludedUsers = getExcludedUsers(user);
+        }
         Page<Feed> feeds;
-        // if (category.equals("전체")) {
-        // // category = "";
-        // feeds = feedRepository.findAllByOrderByRegDtDesc();
-        // } else {
-        // feeds = feedRepository.findAllByCategoryOrderByRegDtDesc(category);
-        // }
         if (category.equals("전체")) {
-            // category = "";
-            feeds = feedRepository.findAll(pageable);
+            feeds = feedRepository.findByUserNotIn(excludedUsers, pageable);
         } else {
-            feeds = feedRepository.findAllByCategory(category, pageable);
+            feeds = feedRepository.findByCategoryAndUserNotIn(category, excludedUsers, pageable);
         }
         boolean hasNext = feeds.hasNext();
         // boolean hasNext = ((long) Math.ceil((double) feeds.size() / 20)) > page + 1;
         List<FeedSimpleDto> feedDtos = feeds.getContent().stream()
-                .map(f -> FeedSimpleDto.toDto(f, imageUrl, hasFeedLike(user, f))).toList();
+                .map(f -> FeedSimpleDto.toDto(f, hasFeedLike(user, f))).toList();
         return new DataResponse(hasNext, feedDtos);
     }
 
     public DataResponse myFeeds(Long userId, int page) {
         User user = userRepository.findById(userId).orElseThrow(null);
-        List<Feed> feeds = feedRepository.findAllByUserOrderByRegDtDesc(user);
-        boolean hasNext = ((long) Math.ceil((double) feeds.size() / 20)) > page + 1;
+        Page<Feed> feeds = feedRepository.findByUser(user);
+        boolean hasNext = ((long) Math.ceil((double) feeds.getSize() / 20)) > page + 1;
         List<FeedSimpleDto> feedDtos = feeds.stream().skip(page * 20).limit(20)
-                .map(f -> FeedSimpleDto.toDto(f, imageUrl, hasFeedLike(user, f))).toList();
+                .map(f -> FeedSimpleDto.toDto(f, hasFeedLike(user, f))).toList();
         return new DataResponse(hasNext, feedDtos);
     }
 
@@ -134,6 +146,13 @@ public class FeedService {
         FeedLike feedLike = new FeedLike(feed, user);
         feedLikeRespository.save(feedLike);
 
+        String fcmToken = feed.getUser().getFcmToken();
+        boolean isAlarm = feed.getUser().getFeedLikeAlarm();
+        String title = "게시글 좋아요";
+        String content = String.format("회원님의 게시글 [%s]를 좋아합니다.",
+                feed.getContent().substring(0, Math.max(20, feed.getContent().length())));
+        String data = feed.getPid() + ",feed";
+        sendPushToClient(isAlarm, fcmToken, title, content, data);
     }
 
     public void removeFeedLike(Feed feed, User user) {
@@ -147,6 +166,38 @@ public class FeedService {
 
     // Feed Like END
 
+    // Comments start
+    public Long writeComment(Long uid, FeedCommentRequest req) {
+        User user = userRepository.findById(uid).get();
+        Feed feed = feedRepository.findById(req.getFeedPid()).get();
+        FeedComment parentComment = feedCommentRepository.findById(req.getFeedCommentPid()).orElse(null);
+        FeedComment comment = feedCommentRepository
+                .save(new FeedComment(user, feed, req.getContent(), parentComment));
+        feed.increaseCommentCount();
+        feedRepository.save(feed);
+
+        String fcmToken, pushTitle;
+        boolean isAlarm;
+        if (req.getFeedCommentPid() == null) {
+            fcmToken = feed.getUser().getFcmToken();
+            isAlarm = feed.getUser().getFeedAlarm();
+            pushTitle = "작성하신 피드의 새로운 댓글이에요";
+        } else {
+            fcmToken = parentComment.getUser().getFcmToken();
+            isAlarm = parentComment.getUser().getFeedAlarm();
+            pushTitle = "작성하신 댓글의 새로운 답글이에요";
+        }
+        sendPushToClient(isAlarm, fcmToken, pushTitle, req.getContent(), feed.getPid() + ",feed");
+        return comment.getPid();
+    }
+
+    // TODO : comments delete,차단기능
+    public void deleteComment(Long commentId, Long userId) {
+        FeedComment comment = feedCommentRepository.findByParentCommentPidAndPid(commentId,
+                userId).orElseThrow(null);
+        feedCommentRepository.delete(comment);
+    }
+
     // Validations
 
     public void validateUser(User user, Feed feed) {
@@ -157,13 +208,40 @@ public class FeedService {
 
     // Process Images
 
-    private void uploadImages(List<FeedImage> images, List<MultipartFile> fileImages) {
-        IntStream.range(0, images.size())
-                .forEach(i -> fileService.upload(fileImages.get(i), images.get(i).getUniqueName()));
+    private void saveFeedImages(Feed feed, List<MultipartFile> images) {
+        List<FeedImage> feedImages = images.stream().map(image -> {
+            String filename = fileService.upload(image);
+            FeedImage feedImage = new FeedImage(filename, feed);
+            return feedImage;
+        }).collect(Collectors.toList());
+
+        feedImageRepository.saveAll(feedImages);
     }
 
-    private void deletedImages(List<FeedImage> images) {
-        images.forEach(i -> fileService.delete(i.getUniqueName()));
+    private void deleteImages(List<String> imageUrls) {
+        imageUrls.forEach(imageUrl -> {
+            fileService.delete(imageUrl);
+            feedImageRepository.deleteByImageUrl(imageUrl);
+        });
     }
 
+    private String sendPushToClient(boolean isAlarm, String token, String title, String content, String data) {
+        if (isAlarm && token != null) {
+            try {
+                return firebasePublisherUtil.postToClient(title, content, data, token);
+            } catch (FirebaseMessagingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    private List<User> getExcludedUsers(User user) {
+        List<User> blockedUsers = blockRespository.findByBlocker(user).stream().map(Block::getBlocked)
+                .collect(Collectors.toList());
+        List<User> blockedByUsers = blockRespository.findByBlocked(user).stream().map(Block::getBlocked)
+                .collect(Collectors.toList());
+        blockedUsers.addAll(blockedByUsers);
+        return blockedUsers.stream().distinct().toList();
+    }
 }

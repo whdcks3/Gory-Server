@@ -2,7 +2,6 @@ package com.whdcks3.portfolio.gory_server.data.models.feed;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,11 +16,9 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.FeedRequest;
 
@@ -36,7 +33,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @DynamicInsert
-public class Feed extends CommonVO {
+public class Feed extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_pid", nullable = false)
@@ -49,15 +46,24 @@ public class Feed extends CommonVO {
     @Size(max = 5000)
     private String content;
 
-    @OneToMany(mappedBy = "feed", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedImage> images;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "feed", targetEntity = FeedComment.class, cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "feed", targetEntity = FeedComment.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<FeedComment> comments = new ArrayList<>();
 
-    @Column(nullable = true, columnDefinition = "INT DEFAULT 0")
-    private int likeCount, viewCount, commetCount, reportCount;
+    @Column(nullable = false)
+    private int likeCount = 0;
+
+    @Column(nullable = false)
+    private int viewCount = 0;
+
+    @Column(nullable = false)
+    private int commetCount = 0;
+
+    @Column(nullable = false)
+    private int reportCount = 0;
 
     @lombok.Builder
     public Feed(User user, FeedRequest req, List<FeedImage> images) {
@@ -68,51 +74,11 @@ public class Feed extends CommonVO {
         this.viewCount = 0;
         this.reportCount = 0;
         this.images = new ArrayList<>();
-        addImages(images);
     }
 
-    public ImageUpdatedResult update(FeedRequest req) {
+    public void update(FeedRequest req) {
         this.content = req.getContent();
         this.category = req.getCategory();
-        ImageUpdatedResult result = findImageUpdatedResult(req.getAddedImages(), req.getDeletedImages());
-        addImages(result.getAddedImages());
-        deleteImages(result.getDeletedImages());
-        return result;
-    }
-
-    private void addImages(List<FeedImage> added) {
-        added.stream().forEach(i -> {
-            images.add(i);
-            i.initFeed(this);
-        });
-        System.out.println(added.size());
-    }
-
-    private void deleteImages(List<FeedImage> deleted) {
-        deleted.stream().forEach(di -> this.images.remove(di));
-    }
-
-    private ImageUpdatedResult findImageUpdatedResult(List<MultipartFile> addedImageFiles,
-            List<Integer> deletedImageIds) {
-        List<FeedImage> addedImages = convertImageFillesToImages(addedImageFiles);
-        List<FeedImage> deletedImages = convertImageIdsToImages(deletedImageIds);
-        return new ImageUpdatedResult(addedImageFiles, addedImages, deletedImages);
-    }
-
-    private List<FeedImage> convertImageIdsToImages(List<Integer> imageIds) {
-        return imageIds.stream()
-                .map(id -> convertImageIdToImage(id))
-                .filter(i -> i.isPresent())
-                .map(i -> i.get())
-                .toList();
-    }
-
-    private Optional<FeedImage> convertImageIdToImage(int id) {
-        return this.images.stream().filter(i -> i.getId() == (id)).findAny();
-    }
-
-    private List<FeedImage> convertImageFillesToImages(List<MultipartFile> imageFiles) {
-        return imageFiles.stream().map(imageFile -> new FeedImage(imageFile.getOriginalFilename())).toList();
     }
 
     public void increaseLikeCount() {
@@ -137,13 +103,5 @@ public class Feed extends CommonVO {
 
     public void increaseReportCount() {
         this.reportCount++;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public static class ImageUpdatedResult {
-        private List<MultipartFile> addedImageFiles;
-        private List<FeedImage> addedImages;
-        private List<FeedImage> deletedImages;
     }
 }

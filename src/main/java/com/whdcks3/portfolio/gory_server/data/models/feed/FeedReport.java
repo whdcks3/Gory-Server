@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
-public class ReportFeed extends CommonVO {
+public class FeedReport extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_pid", nullable = false)
@@ -41,7 +41,7 @@ public class ReportFeed extends CommonVO {
     @Size(max = 500)
     private String content;
 
-    public ReportFeed(String category, String content, User reporter, Feed feed) {
+    public FeedReport(String category, String content, User reporter, Feed feed) {
         this.category = category;
         this.content = content;
         this.reporter = reporter;

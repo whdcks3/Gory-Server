@@ -17,7 +17,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.models.user.UserChatroom;
 import com.whdcks3.portfolio.gory_server.data.requests.ChatroomRequests;
@@ -33,7 +33,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @DynamicInsert
-public class Chatroom extends CommonVO {
+public class Chatroom extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_pid", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

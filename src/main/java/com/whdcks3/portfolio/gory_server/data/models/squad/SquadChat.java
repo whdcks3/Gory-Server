@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.DynamicInsert;
 
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.Builder;
@@ -30,7 +30,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @DynamicInsert
-public class SquadChat extends CommonVO {
+public class SquadChat extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_pid")

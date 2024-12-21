@@ -1,5 +1,6 @@
-package com.whdcks3.portfolio.gory_server.contorollers;
+package com.whdcks3.portfolio.gory_server.controllers;
 
+import org.attoparser.dom.Comment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -8,9 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +29,7 @@ import com.whdcks3.portfolio.gory_server.data.requests.FeedRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.CommonResponse;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
+import com.whdcks3.portfolio.gory_server.service.BlockService;
 import com.whdcks3.portfolio.gory_server.service.FeedService;
 
 import ch.qos.logback.classic.pattern.Util;
@@ -40,12 +45,15 @@ public class FeedController {
     @Autowired
     FeedService feedService;
 
+    @Autowired
+    BlockService blockService;
+
     // 피드 생성
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createFeed(Authentication authentication, @RequestBody FeedRequest req) {
+    public ResponseEntity<?> createFeed(@AuthenticationPrincipal User user, @ModelAttribute FeedRequest req) {
         try {
-            feedService.createFeed(req, Utils.getPid());
+            feedService.createFeed(req, user);
         } catch (ValidationException e) {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
         }
@@ -53,12 +61,12 @@ public class FeedController {
     }
 
     // 피드 수정
-    @PostMapping("/modify/{id}")
+    @PutMapping("/modify/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> modifyFeed(Authentication authentication, @PathVariable Long id,
-            @RequestBody FeedRequest req) {
+    public ResponseEntity<?> modifyFeed(@AuthenticationPrincipal User user, @PathVariable Long id,
+            @ModelAttribute FeedRequest req) {
         try {
-            feedService.updateFeed(req, Utils.getPid(), id);
+            feedService.updateFeed(req, user, id);
         } catch (ValidationException e) {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
         }
@@ -66,11 +74,11 @@ public class FeedController {
     }
 
     // 피드 삭제
-    @GetMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> deleteFeed(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<?> deleteFeed(@AuthenticationPrincipal User user, @PathVariable Long fid) {
         try {
-            feedService.deleteFeed(Utils.getPid(), id);
+            feedService.deleteFeed(user, fid);
         } catch (ValidationException e) {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
         }
@@ -80,7 +88,7 @@ public class FeedController {
 
     @GetMapping("/like/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> likeFeed(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<?> likeFeed(@AuthenticationPrincipal User user, @PathVariable Long id) {
         try {
             feedService.processFeedLike(Utils.getPid(), id);
         } catch (ValidationException e) {
@@ -113,11 +121,11 @@ public class FeedController {
 
     @RequestMapping(value = "/home", method = RequestMethod.GET)
     public ResponseEntity<?> home(
-            @PageableDefault(sort = "regDt", direction = Sort.Direction.DESC, size = 10) Pageable pageable,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable,
             @RequestParam(value = "category", defaultValue = "전체") String category,
             @AuthenticationPrincipal User user) {
         System.out.println("user: " + (user != null));
-        return ResponseEntity.ok().body(feedService.feeds(user, pageable, category));
+        return ResponseEntity.ok().body(feedService.homeFeed(user, pageable, category));
     }
 
     @PostMapping("/others/{id}")
@@ -130,4 +138,17 @@ public class FeedController {
         }
         return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
+
+    @DeleteMapping("deletecomment/{id}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        try {
+            feedService.deleteComment(id, userId);
+        } catch (ValidationException e) {
+            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+                    e.getMessage()));
+        }
+        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+    }
+
 }

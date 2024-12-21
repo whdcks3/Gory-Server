@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
@@ -27,7 +27,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
-public class ReportSquad extends CommonVO {
+public class ReportSquad extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "squad_pid", nullable = false)

@@ -13,13 +13,20 @@ import com.whdcks3.portfolio.gory_server.data.models.user.User;
 @Repository
 public interface FeedRepository extends JpaRepository<Feed, Long> {
 
-    List<Feed> findAllByUserOrderByRegDtDesc(User user);
+    List<Feed> findAllByOrderByCreatedAtDesc();
 
-    List<Feed> findAllByOrderByRegDtDesc();
-
-    List<Feed> findAllByCategoryOrderByRegDtDesc(String category);
+    List<Feed> findAllByCategoryOrderByCreatedAtDesc(String category);
 
     Page<Feed> findAllByCategory(String category, Pageable pageable);
 
     Page<Feed> findAll(Pageable pageable);
+
+    // 확정
+
+    Page<Feed> findByCategoryAndUserNotIn(String category, Iterable<User> users,
+            Pageable pageable);
+
+    Page<Feed> findByUser(User user);
+
+    Page<Feed> findByUserNotIn(Iterable<User> users, Pageable pageable);
 }

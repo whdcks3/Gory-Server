@@ -19,7 +19,7 @@ public class PushRequest {
         this.body = body;
     }
 
-    public String getLink(String link) {
+    public String getLink() {
         return link;
     }
 

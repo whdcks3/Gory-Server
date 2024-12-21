@@ -6,7 +6,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.DynamicInsert;
 
 import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @DynamicInsert
-public class Setting extends CommonVO {
+public class Setting extends BaseEntity {
     String privacy, terms;
 
     public Setting() {

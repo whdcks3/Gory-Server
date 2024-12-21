@@ -51,7 +51,7 @@ public class AuthControllerTest {
     void setup() {
         // userRepository.deleteAll();
         User user = userRepository.findByEmail("sj012944@gmail.com").get();
-        activateToken = user.getActivationToken();
+        // activateToken = user.getActivationToken();
         nickname = user.getNickname();
         RandomCode code = randomCodeRepository.findByCode("sj012944@gmail.com");
         // authService.signUp(
@@ -94,7 +94,6 @@ public class AuthControllerTest {
                 .param("code", code.toString()))
                 .andExpect(status().isOk())
                 .andReturn();
-
 
     } // 아무코드 받아도 넘어감
 

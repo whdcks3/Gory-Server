@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
 import org.threeten.bp.LocalDate;
 
 import com.google.auto.value.AutoValue.Builder;
-import com.whdcks3.portfolio.gory_server.common.CommonVO;
+import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatroomChat extends CommonVO {
+public class ChatroomChat extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_pid")
     private User user;

@@ -18,8 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndSnsType(String email, String snsType);
 
-    Optional<User> findByActivationToken(String token);
-
     Boolean existsByEmail(String email);
 
     Boolean existsByPhone(String phone);

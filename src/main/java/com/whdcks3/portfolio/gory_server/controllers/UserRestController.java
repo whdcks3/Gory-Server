@@ -1,9 +1,11 @@
-package com.whdcks3.portfolio.gory_server.contorollers;
+package com.whdcks3.portfolio.gory_server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,9 @@ import com.whdcks3.portfolio.gory_server.data.responses.CommonResponse;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.service.UserService;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/user")
@@ -39,7 +44,7 @@ public class UserRestController {
         return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
-    @PostMapping("/update_nickname")
+    @PutMapping("/update_nickname")
     public ResponseEntity<?> checkNickname(Authentication authentication, @RequestParam String nickname) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         userService.updateNickname(userDetails.getPid(), nickname);
@@ -65,7 +70,7 @@ public class UserRestController {
         return ResponseEntity.ok("이메일 인증 완료");
     }
 
-    @PostMapping("/modify_password")
+    @PutMapping("/modify_password")
     public ResponseEntity<?> modifyPassword(@RequestParam String email, @RequestParam String snsType,
             @RequestParam String snsId, @RequestParam String password) {
         try {
@@ -74,5 +79,11 @@ public class UserRestController {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
         }
         return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+    }
+
+    @PutMapping("update_fcm")
+    public ResponseEntity<?> updateFcm(@AuthenticationPrincipal User user, @RequestParam String token) {
+        userService.updateFcm(user, token);
+        return ResponseEntity.ok().build();
     }
 }

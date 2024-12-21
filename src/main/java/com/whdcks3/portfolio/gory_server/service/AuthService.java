@@ -2,48 +2,41 @@ package com.whdcks3.portfolio.gory_server.service;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.IllegalTransactionStateException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.models.RandomCode;
 import com.whdcks3.portfolio.gory_server.data.models.Role;
+import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
+import com.whdcks3.portfolio.gory_server.repositories.EmailVerificationRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
-import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.security.service.CustomerUserDetailsServiceImpl;
 
-import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
 
     @Autowired
     RandomCodeRepository randomCodeRepository;
+
+    @Autowired
+    EmailVerificationRepository emailVerificationRepository;
 
     @Autowired
     EmailUtils emailUtils;
@@ -63,11 +56,6 @@ public class AuthService {
     @Autowired
     JwtUtils jwtUtils;
 
-    @Value("${upload.image.location}")
-    String imageFolder;
-    @Value("${get.image.location}")
-    String imageUrl;
-
     public boolean signUp(SignupRequest req) {
         System.out.println("Start signing up!");
         try {
@@ -75,27 +63,10 @@ public class AuthService {
             String imageName = "avatar_placeholder.png";
             Role role = roleRepository.findByName(ERole.ROLE_USER).orElseThrow();
             roles.add(role);
-            User user = new User(req, passwordEncoder.encode(req.getSnsType() + req.getSnsId()),
-                    imageUrl + imageName,
-                    imageFolder + imageName);
+            User user = new User(req, passwordEncoder.encode(req.getSnsType() + req.getSnsId()), imageName);
             user.setRoles(roles);
             userRepository.save(user);
-            // UserDetails userDetails =
-            // customUserDetailsServ.loadUserByUsername(req.getEmail());
-            // Authentication authentication = new
-            // UsernamePasswordAuthenticationToken(userDetails, null,
-            // userDetails.getAuthorities());
-            // SecurityContextHolder.getContext().setAuthentication(authentication);
-            // String jwt = jwtUtils.generateJwtToken(authentication);
 
-            // CustomUserDetails userDetailsImpl = (CustomUserDetails) authentication
-            // .getPrincipal();
-            // List<String> roles2 = userDetails.getAuthorities().stream().map(i ->
-            // i.getAuthority())
-            // .collect(Collectors.toList());
-            // System.out.println(jwt + " , " + userDetailsImpl.getPid() + " , " +
-            // userDetailsImpl.getUsername() + " , "
-            // + userDetailsImpl.getNickname());
             sendActivationEmail(user);
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,7 +76,6 @@ public class AuthService {
 
         return true;
     }
-    // TODO : 회원 정보 가져오기 func
 
     public String getUserSnsType(String email) {
         Optional<User> user = userRepository.findByEmail(email);
@@ -127,11 +97,6 @@ public class AuthService {
         }
 
         return true;
-    }
-
-    public void sendActivationEmail(User user) {
-        String activationLink = "http://localhost:3434/api/auth/activate?token=" + user.getActivationToken();
-        emailUtils.sendEmail(user.getEmail(), "계정 활성화", "다음 링크를 통해 계정을 활성화 해주세요. " + activationLink);
     }
 
     // 5번이상 인증 시 30분 잠금
@@ -160,40 +125,28 @@ public class AuthService {
         return true;
     }
 
+    public void resetPassword(String email, String rawPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(null);
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+        System.out.println("비밀번호 초기화 완료");
+    }
+
     // 메일 인증 링크로 인한 계정 활성화
     public boolean activateUser(String token) {
-        return userRepository.findByActivationToken(token)
-                .filter(user -> user.getTokenExpiryDate().isAfter(LocalDateTime.now()))
-                .map(user -> {
-                    user.setLockType(LockType.NONE);
-                    user.setActivationToken(null);
-                    user.setTokenExpiryDate(null);
-                    user.setLockedUntil(null);
-                    userRepository.save(user);
+        return emailVerificationRepository.findByToken(token)
+                .filter(verification -> verification.getExpiredAt().isAfter(LocalDateTime.now()))
+                .map(verification -> {
+                    verification.setVerified(true);
+                    verification.getUser().setLockType(LockType.NONE);
+                    verification.getUser().setLockedUntil(null);
+                    emailVerificationRepository.save(verification);
+                    userRepository.save(verification.getUser());
                     return true;
                 })
                 .orElse(false);
-        // String activationLink = "http://localhost:3434/validate?token=" +
-        // user.getActivationToken();
-
-        // // builder.queryParam("email", email).queryParam("code",
-        // code).build().toUriString();
-
-        // RandomCode storedCode = randomCodeRepository.findByEmail(email);
-        // if (storedCode == null) {
-        // return "존재하지 않는 코드입니다.";
-        // }
-        // if (storedCode.isExpired()) {
-        // return " 만료된 코드입니다.";
-        // }
-        // if (!storedCode.getCode().equals(storedCode)) {
-        // return "코드가 일치하지 않습니다";
-        // }
-
-        // storedCode.isEnabled(true);
-        // randomCodeRepository.save(storedCode);
-
-        // return "코드 인증이 완료되었습니다.";
     }
 
     // 회원에게 이메일 보내기
@@ -227,11 +180,16 @@ public class AuthService {
             throw new IllegalStateException("이미 활성화된 계정입니다.");
         }
 
-        String newToken = UUID.randomUUID().toString();
-        user.setActivationToken(newToken);
-        user.setTokenExpiryDate(LocalDateTime.now().plusHours(24));
-        user = userRepository.save(user);
-        ;
+        sendActivationEmail(user);
+    }
+
+    public void sendActivationEmail(User user) {
+        String token = UUID.randomUUID().toString();
+        EmailVerification verification = new EmailVerification(user, token, LocalDateTime.now().plusHours(24),
+                false);
+        emailVerificationRepository.save(verification);
+
+        emailUtils.sendVerificationEmail(user.getEmail(), token);
     }
     // char[] keys = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
     // };
