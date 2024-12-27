@@ -1,5 +1,7 @@
 package com.whdcks3.portfolio.gory_server.controllers;
 
+import java.lang.annotation.Repeatable;
+
 import org.attoparser.dom.Comment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -52,12 +54,15 @@ public class FeedController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createFeed(@AuthenticationPrincipal User user, @ModelAttribute FeedRequest req) {
-        try {
-            feedService.createFeed(req, user);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        feedService.createFeed(req, user);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.createFeed(req, user);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     // 피드 수정
@@ -65,36 +70,44 @@ public class FeedController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> modifyFeed(@AuthenticationPrincipal User user, @PathVariable Long id,
             @ModelAttribute FeedRequest req) {
-        try {
-            feedService.updateFeed(req, user, id);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        feedService.updateFeed(req, user, id);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.updateFeed(req, user, id);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     // 피드 삭제
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> deleteFeed(@AuthenticationPrincipal User user, @PathVariable Long fid) {
-        try {
-            feedService.deleteFeed(user, fid);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
-
+        feedService.deleteFeed(user, fid);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.deleteFeed(user, fid);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     @GetMapping("/like/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> likeFeed(@AuthenticationPrincipal User user, @PathVariable Long id) {
-        try {
-            feedService.processFeedLike(Utils.getPid(), id);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        feedService.processFeedLike(Utils.getPid(), id);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.processFeedLike(Utils.getPid(), id);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     @Operation(summary = "나의 피드", security = @SecurityRequirement(name = "bearerAuth"))
@@ -102,12 +115,15 @@ public class FeedController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> mine(Authentication authentication,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
-        try {
-            feedService.myFeeds(Utils.getPid(), pageable);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        feedService.myFeeds(Utils.getPid(), pageable);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.myFeeds(Utils.getPid(), pageable);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     // @RequestMapping(value = "/home", method = RequestMethod.GET)
@@ -131,24 +147,30 @@ public class FeedController {
     @PostMapping("/others/{id}")
     public ResponseEntity<?> other(Authentication authentication, @PathVariable Long id,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
-        try {
-            feedService.othersFeed(Utils.getPid(), id, pageable);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+
+        feedService.othersFeed(Utils.getPid(), id, pageable);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.othersFeed(Utils.getPid(), id, pageable);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     @DeleteMapping("deletecomment/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        try {
-            feedService.deleteComment(id, userId);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
-                    e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        feedService.deleteComment(id, userId);
+        return ResponseEntity.ok().build();
+        // try {
+        // feedService.deleteComment(id, userId);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
 }

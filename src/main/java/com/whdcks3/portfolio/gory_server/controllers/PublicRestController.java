@@ -87,12 +87,15 @@ public class PublicRestController {
 
     @PostMapping("/repassword")
     public ResponseEntity<?> rePassword(@RequestParam String email, @RequestParam String rawPassword) {
-        try {
-            authService.resetPassword(email, rawPassword);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        authService.resetPassword(email, rawPassword);
+        return ResponseEntity.ok().build();
+        // try {
+        // authService.resetPassword(email, rawPassword);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
@@ -123,12 +126,15 @@ public class PublicRestController {
     // 회원 이메일,코드 유효성 인증
     @PostMapping("/validate")
     public ResponseEntity<?> validatingUser(@RequestParam String email, @RequestParam String code) {
-        try {
-            authService.validateUser(email, code);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        authService.validateUser(email, code);
+        return ResponseEntity.ok().build();
+        // try {
+        // authService.validateUser(email, code);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     // 회원 토큰으로 인한 활성화

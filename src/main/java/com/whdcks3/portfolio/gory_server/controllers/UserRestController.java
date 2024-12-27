@@ -36,12 +36,15 @@ public class UserRestController {
 
     @GetMapping("/generate_username")
     public ResponseEntity<?> generateUserName() {
-        try {
-            userService.generateNickname();
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        userService.generateNickname();
+        return ResponseEntity.ok().build();
+        // try {
+        // userService.generateNickname();
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     @PutMapping("/update_nickname")
@@ -53,11 +56,15 @@ public class UserRestController {
 
     @PostMapping("/limit_username")
     public ResponseEntity<?> limitName(Authentication authentication, @RequestParam String user) {
-        try {
-            return ResponseEntity.ok().body(new CommonResponse(100, userService.limitNickname(user)));
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
+        userService.limitNickname(user);
+        return ResponseEntity.ok().build();
+        // try {
+        // return ResponseEntity.ok().body(new CommonResponse(100,
+        // userService.limitNickname(user)));
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
     }
 
     @PostMapping("/find_account")
@@ -73,12 +80,15 @@ public class UserRestController {
     @PutMapping("/modify_password")
     public ResponseEntity<?> modifyPassword(@RequestParam String email, @RequestParam String snsType,
             @RequestParam String snsId, @RequestParam String password) {
-        try {
-            userService.modifyPassword(email, snsType, snsId, password);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        userService.modifyPassword(email, snsType, snsId, password);
+        return ResponseEntity.ok().build();
+        // try {
+        // userService.modifyPassword(email, snsType, snsId, password);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     @PutMapping("update_fcm")

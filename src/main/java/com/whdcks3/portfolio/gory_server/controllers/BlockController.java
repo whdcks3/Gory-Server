@@ -26,33 +26,42 @@ public class BlockController {
     // 사용자 차단
     @PostMapping("/{otherid}")
     public ResponseEntity<?> blockUser(@AuthenticationPrincipal User user, @PathVariable User blockId) {
-        try {
-            blockService.blockUser(user, blockId);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        blockService.blockUser(user, blockId);
+        return ResponseEntity.ok().build();
+        // try {
+        // blockService.blockUser(user, blockId);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     // 사용자 차단 해제
     @DeleteMapping("/{otherid}")
     public ResponseEntity<?> unBlockUser(@AuthenticationPrincipal User user, @PathVariable User otherId) {
-        try {
-            blockService.unblockUser(user, otherId);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        blockService.unblockUser(user, otherId);
+        return ResponseEntity.ok().build();
+        // try {
+        // blockService.unblockUser(user, otherId);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
     // 차단된 사용자 조회
     @GetMapping
     public ResponseEntity<?> getBlockedUsers(@AuthenticationPrincipal User user, @PathVariable User userId) {
-        try {
-            blockService.getBlockUsers(userId);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        blockService.getBlockUsers(userId);
+        return ResponseEntity.ok().build();
+        // try {
+        // blockService.getBlockUsers(userId);
+        // } catch (ValidationException e) {
+        // return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(),
+        // e.getMessage()));
+        // }
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 }

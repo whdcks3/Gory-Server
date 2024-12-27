@@ -23,6 +23,7 @@ import org.springframework.format.datetime.DateFormatter;
 
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.Role;
+import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
@@ -93,7 +94,7 @@ public class User extends BaseEntity {
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "user")
-    private List<UserSquad> squads = new ArrayList<>();
+    private List<SquadParticipant> squads = new ArrayList<>();
 
     @Column(nullable = true)
     private String fcmToken;
