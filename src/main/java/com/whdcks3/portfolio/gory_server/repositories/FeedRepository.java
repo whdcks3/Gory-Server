@@ -26,7 +26,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     Page<Feed> findByCategoryAndUserNotIn(String category, Iterable<User> users,
             Pageable pageable);
 
-    Page<Feed> findByUser(User user);
+    Page<Feed> findByUser(User user, Pageable pageable);
 
     Page<Feed> findByUserNotIn(Iterable<User> users, Pageable pageable);
 }

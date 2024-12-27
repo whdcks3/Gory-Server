@@ -86,14 +86,13 @@ public class FeedService {
     }
     // Feed fetch
 
-    public DataResponse othersFeed(Long userId, Long otherId, int page) {
+    public DataResponse othersFeed(Long userId, Long otherId, Pageable pageable) {
         User other = userRepository.findById(otherId).orElseThrow(null);
         User user = userRepository.findById(userId).orElseThrow(null);
-        Page<Feed> feeds = feedRepository.findByUser(other);
-        boolean hasNext = ((long) Math.ceil((double) feeds.getSize() / 20)) > page + 1;
-        List<FeedSimpleDto> feedDtos = feeds.stream().skip(page * 20).limit(20)
+        Page<Feed> feeds = feedRepository.findByUser(other, pageable);
+        List<FeedSimpleDto> feedDtos = feeds.getContent().stream()
                 .map(f -> FeedSimpleDto.toDto(f, hasFeedLike(user, f))).toList();
-        return new DataResponse(hasNext, feedDtos);
+        return new DataResponse(feeds.hasNext(), feedDtos);
     }
 
     // public DataResponse feeds(User user, int page, String category) {
@@ -115,13 +114,12 @@ public class FeedService {
         return new DataResponse(hasNext, feedDtos);
     }
 
-    public DataResponse myFeeds(Long userId, int page) {
+    public DataResponse myFeeds(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(null);
-        Page<Feed> feeds = feedRepository.findByUser(user);
-        boolean hasNext = ((long) Math.ceil((double) feeds.getSize() / 20)) > page + 1;
-        List<FeedSimpleDto> feedDtos = feeds.stream().skip(page * 20).limit(20)
+        Page<Feed> feeds = feedRepository.findByUser(user, pageable);
+        List<FeedSimpleDto> feedDtos = feeds.getContent().stream()
                 .map(f -> FeedSimpleDto.toDto(f, hasFeedLike(user, f))).toList();
-        return new DataResponse(hasNext, feedDtos);
+        return new DataResponse(feeds.hasNext(), feedDtos);
     }
 
     // Feed Like START

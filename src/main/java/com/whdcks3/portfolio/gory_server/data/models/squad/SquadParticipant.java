@@ -1,7 +1,9 @@
-package com.whdcks3.portfolio.gory_server.data.models.user;
+package com.whdcks3.portfolio.gory_server.data.models.squad;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -10,7 +12,8 @@ import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.DynamicInsert;
 
-import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
+import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.enums.JoinType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +26,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
-public class UserSquad {
+public class SquadParticipant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,12 +40,22 @@ public class UserSquad {
     @JoinColumn(name = "squad_pid")
     private Squad squad;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private Boolean confirmed, denied, banned;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ParticipationStatus status;
 
-    public UserSquad(User user, Squad squad) {
+    public SquadParticipant(User user, Squad squad) {
         this.user = user;
         this.squad = squad;
-        this.confirmed = true;
+        this.status = squad.getJoinType().equals(JoinType.DIRECT) ? ParticipationStatus.JOINED
+                : ParticipationStatus.PENDING;
+    }
+
+    public enum ParticipationStatus {
+        JOINED,
+        PENDING,
+        REJECTED,
+        KICKED_OUT,
+        LEFT
     }
 }

@@ -1,11 +1,15 @@
 package com.whdcks3.portfolio.gory_server.data.models.squad;
 
+import java.lang.annotation.Native;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -20,8 +24,9 @@ import org.hibernate.annotations.OnDeleteAction;
 import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
-import com.whdcks3.portfolio.gory_server.data.models.user.UserSquad;
 import com.whdcks3.portfolio.gory_server.data.requests.SquadRequest;
+import com.whdcks3.portfolio.gory_server.enums.Gender;
+import com.whdcks3.portfolio.gory_server.enums.JoinType;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,10 +46,24 @@ public class Squad extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    private String name, category, regionMain, regionSub, ampm, gender, introduction;
-    private Boolean isTimeSelected, shouldBeConfirmed;
-    private Integer memberCount, startAge, endAge, hour, minute;
+    private String title, category, regionMain, regionSub, description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Gender genderRequirement;
+
+    @Column(nullable = false)
+    private boolean timeSpecified;
+
+    private int maxParticipants, minAge, maxAge;
+
     private LocalDate date;
+
+    private LocalTime time;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private JoinType joinType;
 
     @Size(max = 1000)
     private String notice;
@@ -56,49 +75,52 @@ public class Squad extends BaseEntity {
     private int reportCount;
 
     @OneToMany(mappedBy = "squad")
-    private List<UserSquad> users = new ArrayList<>();
+    private List<SquadParticipant> participants = new ArrayList<>();
 
     @lombok.Builder
     public Squad(User user, SquadRequest req) {
         this.user = user;
         this.category = req.getCategory();
-        this.name = req.getName();
+        this.title = req.getTitle();
+        this.description = req.getDescription();
         this.regionMain = req.getRegionMain();
         this.regionSub = req.getRegionSub();
-        this.ampm = req.getAmpm();
-        this.gender = req.getGender();
-        this.introduction = req.getIntroduction();
-        this.isTimeSelected = req.getIsTimeSelected();
-        this.shouldBeConfirmed = req.getShouldBeConfirmed();
-        this.memberCount = req.getMemberCount();
-        this.startAge = req.getStartAge();
-        this.endAge = req.getEndAge();
-        this.hour = req.getHour();
-        this.minute = req.getMinute();
+        this.timeSpecified = req.getTimeSpecified();
+        if (req.getTimeSpecified().booleanValue()) {
+            this.time = req.getTime();
+        }
+        this.genderRequirement = req.getGenderRequirement();
+        this.joinType = req.getJoinType();
+        this.maxParticipants = req.getMaxParticipants();
+        this.minAge = req.getMinAge();
+        this.maxAge = req.getMaxAge();
         this.date = req.getDate();
         this.currentCount = 1;
     }
 
     public void update(SquadRequest req) {
         this.category = req.getCategory();
-        this.name = req.getName();
+        this.title = req.getTitle();
+        this.description = req.getDescription();
         this.regionMain = req.getRegionMain();
         this.regionSub = req.getRegionSub();
-        this.ampm = req.getAmpm();
-        this.gender = req.getGender();
-        this.introduction = req.getIntroduction();
-        this.isTimeSelected = req.getIsTimeSelected();
-        this.memberCount = req.getMemberCount();
-        this.startAge = req.getStartAge();
-        this.endAge = req.getEndAge();
-        this.hour = req.getHour();
-        this.minute = req.getMinute();
+        this.timeSpecified = req.getTimeSpecified();
+        if (req.getTimeSpecified().booleanValue()) {
+            this.time = req.getTime();
+        }
+        this.genderRequirement = req.getGenderRequirement();
+        this.joinType = req.getJoinType();
+        this.maxParticipants = req.getMaxParticipants();
+        this.minAge = req.getMinAge();
+        this.maxAge = req.getMaxAge();
         this.date = req.getDate();
+        this.currentCount = 1;
     }
 
     public boolean isJoining(User user) {
-        for (UserSquad userSquad : users) {
-            if (userSquad.getUser().getPid() == user.getPid() && userSquad.getConfirmed()) {
+        for (SquadParticipant squadParticipant : participants) {
+            if (squadParticipant.getUser().getPid() == user.getPid()
+                    && squadParticipant.getStatus().equals(SquadParticipant.ParticipationStatus.JOINED)) {
                 return true;
             }
         }
@@ -117,7 +139,8 @@ public class Squad extends BaseEntity {
         this.reportCount++;
     }
 
-    public boolean checkGender(String gender) {
-        return this.gender.equals("누구나") || this.gender.contains(gender);
+    public boolean checkGender(Gender gender) {
+        return this.genderRequirement.equals(Gender.ALL) || this.genderRequirement.equals(gender);
     }
+
 }

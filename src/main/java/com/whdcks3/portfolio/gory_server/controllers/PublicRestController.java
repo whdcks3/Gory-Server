@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sun.mail.iap.Response;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.common.Utils;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
@@ -140,11 +141,8 @@ public class PublicRestController {
     // 다중인증(최대 5회) 시 계정 잠금
     @PostMapping("/multiauth")
     public ResponseEntity<?> multiAuthentication(@RequestParam String email) {
-        try {
-            authService.shouldLock(email);
-        } catch (ValidationException e) {
-            return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
-        }
-        return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
+        authService.shouldLock(email);
+        return ResponseEntity.ok().build();
+        // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 }

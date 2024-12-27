@@ -104,7 +104,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email).orElseThrow();
         if (user.isWithinLockedTime()) {
             System.out.println("계정 잠금, 해제 시간 : " + user.getLockedUntil());
-            return false;
+            throw new ValidationException("반복된 시도로 계정이 잠겨, " + user.getLockedUntil() + " 이후에 시도 가능합니다.");
         }
 
         LocalDateTime time = LocalDateTime.now();

@@ -101,9 +101,9 @@ public class FeedController {
     @RequestMapping(value = "/mine", method = RequestMethod.GET)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> mine(Authentication authentication,
-            @RequestParam(value = "page", defaultValue = "0") int page) {
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
         try {
-            feedService.myFeeds(Utils.getPid(), page);
+            feedService.myFeeds(Utils.getPid(), pageable);
         } catch (ValidationException e) {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
         }
@@ -130,9 +130,9 @@ public class FeedController {
 
     @PostMapping("/others/{id}")
     public ResponseEntity<?> other(Authentication authentication, @PathVariable Long id,
-            @RequestParam(value = "page", defaultValue = "0") int page) {
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
         try {
-            feedService.othersFeed(Utils.getPid(), id, page);
+            feedService.othersFeed(Utils.getPid(), id, pageable);
         } catch (ValidationException e) {
             return ResponseEntity.ok().body(new CommonResponse(e.getStatusCode(), e.getMessage()));
         }
