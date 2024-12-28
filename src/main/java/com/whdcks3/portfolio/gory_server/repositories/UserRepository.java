@@ -8,6 +8,8 @@ import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    Optional<User> findById(User id);
+
     Optional<User> findByEmail(String email);
 
     Optional<User> findByPhone(String phone);
