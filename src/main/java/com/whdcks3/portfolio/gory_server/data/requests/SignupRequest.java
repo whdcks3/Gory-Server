@@ -1,5 +1,7 @@
 package com.whdcks3.portfolio.gory_server.data.requests;
 
+import java.time.LocalDate;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
@@ -38,7 +40,8 @@ public class SignupRequest {
     private String gender;
 
     @Past(message = "생년월일은 과거 날짜여야 합니다.")
-    private String birth;
+    private LocalDate birth;
+
     private String receiveEvent;
 
     private String txSeqNo;

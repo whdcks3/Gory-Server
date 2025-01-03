@@ -1,12 +1,34 @@
 package com.whdcks3.portfolio.gory_server.security.jwt;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.crypto.KeyGenerator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -21,54 +43,119 @@ public class JwtUtils {
     // JWT 작업에서 발생하는 문제 로깅
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    // JWT를 서명하고 검증하기 위한 비밀 키
-    @Value("${gory.app.jwtSecret}")
-    private String jwtSecret;
+    private static final String PRIVATE_KEY_PATH = "src/main/resources/keys/private_key.pem";
+    private static final String PUBLIC_KEY_PATH = "src/main/resources/keys/public_key.pem";
 
-    // 토큰의 유효 기간을 설정
-    @Value("${gory.app.jwtExpirationMs}")
-    private int jwtExpirationMs;
+    private static final long ACCESS_TOKEN_EXPIRATION = 3600000;
+    private static final long REFRESH_TOKEN_EXPIRATION = 604800000;
 
-    // JWT 토큰 생성
-    public String generateJwtToken(Authentication authentication) {
-        CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+
+    public JwtUtils() {
+        try {
+            generateKeysIfAbsent();
+            this.privateKey = loadPrivateKey();
+            this.publicKey = loadPublicKey();
+        } catch (Exception e) {
+            throw new RuntimeException("키 로드 중 오류 발생: " + e.getMessage(), e);
+        }
+    }
+
+    private PrivateKey loadPrivateKey() throws Exception {
+        Path privateKeyPath = Paths.get(PRIVATE_KEY_PATH);
+        if (!Files.exists(privateKeyPath)) {
+            throw new IllegalStateException("개인 키 파일이 존재하지 않습니다: " + privateKeyPath);
+        }
+        byte[] keyBytes = Files.readAllBytes(privateKeyPath);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePrivate(spec);
+    }
+
+    private PublicKey loadPublicKey() throws Exception {
+        Path publicKeyPath = Paths.get(PUBLIC_KEY_PATH);
+        if (!Files.exists(publicKeyPath)) {
+            throw new IllegalStateException("공개 키 파일이 존재하지 않습니다: " + publicKeyPath);
+        }
+        byte[] keyBytes = Files.readAllBytes(publicKeyPath);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePublic(spec);
+    }
+
+    private void generateKeysIfAbsent() throws Exception {
+        Path privateKeyPath = Paths.get(PRIVATE_KEY_PATH);
+        Path publicKeyPath = Paths.get(PUBLIC_KEY_PATH);
+
+        if (!Files.exists(privateKeyPath) || !Files.exists(publicKeyPath)) {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2024);
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+            Files.createDirectories(privateKeyPath.getParent());
+            Files.write(privateKeyPath, keyPair.getPrivate().getEncoded());
+            Files.write(publicKeyPath, keyPair.getPublic().getEncoded());
+
+            System.out.println("RSA 키가 생성되었습니다.");
+        }
+    }
+
+    public String generateAccessToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
 
         return Jwts.builder()
-                // 사용자 이름을 토큰의 주체로 설정
-                .setSubject((userPrincipal.getUsername()))
-                // 토큰발행 시각 설정
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
-                // 토큰 만료 시간을 현재 시간 + jwtExpirationMs로 설정
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs * 365))
-                // 지정된 알고리즘과 비밀키로 토큰 서명
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                // JWT 문자열 반환
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
 
-    // JWT 사용자 이름 추출
-    public String getUserNameFromJwtToken(String token) {
-        // 객체를 반환하고, 서명 검증을 위한 비밀키 설정, JWT를 파싱하고 서명을 확인하여 토큰에 포함된 클레임을 가져오고,
-        // 토큰에서 클레임 정보를 반환하고, 클레임 중에서 subject(주체:이름) 필드 값을 반환
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
     }
 
     // JWT 유효성 검증
-    public boolean validateJwtToken(String authToken) {
+    public Claims validateJwtToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
-            return true;
-        } catch (SignatureException e) { // 서명이 올바르지 않은 경우
-            logger.error("Invalid JWT signature: {}", e.getMessage());
-        } catch (MalformedJwtException e) { // 토큰의 형식이 올바르지 않은 경우
-            logger.error("Invalid JWT token: {}", e.getMessage());
-        } catch (ExpiredJwtException e) { // 토큰이 만료된 경우
-            logger.error("JWT token is expired: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) { // 지원하지 않는 형식의 토큰일 경우
-            logger.error("JWT token is unsupported: {}", e.getMessage());
-        } catch (IllegalArgumentException e) { // 토큰 문자열이 비어 있거나 null인 경우
-            logger.error("JWT claims string is empty: {}", e.getMessage());
+            return Jwts.parserBuilder()
+                    .setSigningKey(publicKey)
+                    .build()
+                    .parseClaimsJws(authToken)
+                    .getBody();
+        } catch (MalformedJwtException e) {
+            throw new IllegalArgumentException("토큰 형식이 잘못되었습니다.");
+        } catch (ExpiredJwtException e) {
+            throw new IllegalArgumentException("토큰이 만료되었습니다.");
+        } catch (UnsupportedJwtException e) {
+            throw new IllegalArgumentException("지원되지 않는 토큰 형식입니다.");
+        } catch (Exception e) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
-        return false;
+    }
+
+    public String extractEmail(String token) {
+        return validateJwtToken(token).getSubject();
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = validateJwtToken(token);
+        String username = claims.getSubject();
+
+        List<SimpleGrantedAuthority> authorities = ((List<?>) claims.get("roles")).stream()
+                .map(role -> new SimpleGrantedAuthority((String) role))
+                .collect(Collectors.toList());
+
+        return new UsernamePasswordAuthenticationToken(username, null, authorities);
     }
 }

@@ -38,11 +38,14 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter() {
-        System.out.println("LOGGING authencationJwtTokenFilter");
-        return new AuthTokenFilter();
-    }
+    @Autowired
+    private AuthTokenFilter authTokenFilter;
+
+    // @Bean
+    // public AuthTokenFilter authenticationJwtTokenFilter() {
+    // System.out.println("LOGGING authencationJwtTokenFilter");
+    // return new AuthTokenFilter();
+    // }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -85,8 +88,7 @@ public class WebSecurityConfig {
                 .authenticated();
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authenticationJwtTokenFilter(),
-                UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         // .sessionManagement(
         // s ->

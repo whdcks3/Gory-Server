@@ -31,7 +31,7 @@ public class SquadService {
         squadParticipantRepository.save(participant);
     }
 
-    public void modifySquad(User uid, Squad sid, SquadRequest req) {
+    public void modifySquad(Long uid, Long sid, SquadRequest req) {
         User user = userRepository.findById(uid).orElseThrow();
         Squad squad = squadRepository.findById(sid).orElseThrow();
         validateOwner(user, squad);
@@ -42,4 +42,5 @@ public class SquadService {
             throw new MemberNotEqualsException();
         }
     }
+
 }

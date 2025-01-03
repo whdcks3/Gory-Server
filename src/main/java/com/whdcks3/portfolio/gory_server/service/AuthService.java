@@ -1,7 +1,9 @@
 package com.whdcks3.portfolio.gory_server.service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.models.RandomCode;
-import com.whdcks3.portfolio.gory_server.data.models.Role;
 import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
@@ -21,7 +22,6 @@ import com.whdcks3.portfolio.gory_server.enums.LockType;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.EmailVerificationRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
-import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.security.service.CustomerUserDetailsServiceImpl;
@@ -51,20 +51,13 @@ public class AuthService {
     CustomerUserDetailsServiceImpl customUserDetailsServ;
 
     @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
     JwtUtils jwtUtils;
 
     public boolean signUp(SignupRequest req) {
         System.out.println("Start signing up!");
         try {
-            Set<Role> roles = new HashSet<>();
             String imageName = "avatar_placeholder.png";
-            Role role = roleRepository.findByName(ERole.ROLE_USER).orElseThrow();
-            roles.add(role);
             User user = new User(req, passwordEncoder.encode(req.getSnsType() + req.getSnsId()), imageName);
-            user.setRoles(roles);
             userRepository.save(user);
 
             sendActivationEmail(user);
@@ -75,6 +68,29 @@ public class AuthService {
         }
 
         return true;
+    }
+
+    public Map<String, String> authenicate(String email, String snsType, String snsId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+        if (user == null || !passwordEncoder.matches(snsType + snsId, user.getPassword())) {
+            throw new IllegalArgumentException("잘못된 소셜 계정입니다.");
+        }
+        return getTokensByUser(user);
+    }
+
+    public Map<String, String> refreshTokens(String refreshToken) {
+        String email = jwtUtils.extractEmail(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return getTokensByUser(user);
+    }
+
+    public Map<String, String> getTokensByUser(User user) {
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", jwtUtils.generateAccessToken(user.touserDetails()));
+        tokens.put("refreshToken", jwtUtils.generateRefreshToken(user.getEmail()));
+        return tokens;
     }
 
     public String getUserSnsType(String email) {

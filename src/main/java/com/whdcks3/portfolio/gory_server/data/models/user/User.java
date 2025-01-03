@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,15 +21,18 @@ import javax.validation.constraints.Size;
 import org.apache.tomcat.jni.Local;
 import org.hibernate.annotations.DynamicInsert;
 import org.springframework.format.datetime.DateFormatter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
-import com.whdcks3.portfolio.gory_server.data.models.Role;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
 import com.whdcks3.portfolio.gory_server.enums.ERole;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
 import com.whdcks3.portfolio.gory_server.enums.OAuthProvider;
+import com.whdcks3.portfolio.gory_server.enums.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -89,9 +93,14 @@ public class User extends BaseEntity {
     @Column(nullable = false, columnDefinition = "VARCHAR(256) DEFAULT ''")
     private String imageUrl, introduction;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_pid"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    // @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    // @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_pid"),
+    // inverseJoinColumns = @JoinColumn(name = "role_id"))
+    // private Set<Role> roles;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @OneToMany(mappedBy = "user")
     private List<SquadParticipant> squads = new ArrayList<>();
@@ -120,11 +129,12 @@ public class User extends BaseEntity {
         this.phone = req.getPhone();
         this.carrier = req.getCarrier();
         this.name = req.getName();
-        this.birth = LocalDate.parse(req.getBirth(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+        this.birth = LocalDate.parse(req.getBirth().toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         this.gender = req.getGender();
         this.receiveEvent = req.getReceiveEvent().equals("true");
         this.nickname = "";
         this.lockType = LockType.EMAIL_AUTH;
+        this.role = Role.USER;
         this.authAttempts = new ArrayList<>();
     }
 
@@ -167,6 +177,15 @@ public class User extends BaseEntity {
 
     public boolean isWithinLockedTime() {
         return lockType.equals(LockType.MANY_ATTEMPTS) && lockedUntil.isAfter(LocalDateTime.now());
+    }
+
+    public UserDetails touserDetails() {
+        List<GrantedAuthority> authories = List.of(new SimpleGrantedAuthority("ROLE_" + this.getRole().name()));
+        return new org.springframework.security.core.userdetails.User(this.getEmail(), this.getPassword(), authories);
+    }
+
+    public List<SimpleGrantedAuthority> getAhorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
 }

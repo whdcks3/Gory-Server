@@ -1,5 +1,7 @@
 package com.whdcks3.portfolio.gory_server.controllers;
 
+import java.util.Map;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,6 @@ import com.whdcks3.portfolio.gory_server.data.responses.CommonResponse;
 import com.whdcks3.portfolio.gory_server.data.responses.ErrorResponse;
 import com.whdcks3.portfolio.gory_server.data.responses.JwtResponse;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
-import com.whdcks3.portfolio.gory_server.repositories.RoleRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -57,32 +59,15 @@ public class PublicRestController {
     UserRepository userRepository;
 
     @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
     AuthenticationManager authenticationManager;
 
     @Autowired
     JwtUtils jwtUtills;
 
-    @Operation(summary = "회원가입", description = "사용자 회원가입 API")
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestParam String email,
+    public ResponseEntity<Map<String, String>> authenticateUser(@Valid @RequestParam String email,
             @Valid @RequestParam String snsType, @Valid @RequestParam String snsId) {
-        System.out.println(email + " , " + snsType + " , " + snsId);
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, snsType + snsId));
-        System.out.println("auth started");
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        System.out.println("start generating token, " + authentication.isAuthenticated());
-        String jwt = jwtUtills.generateJwtToken(authentication);
-        System.out.println("jwt: " + jwt);
-        // CustomUserDetails customUserDetails = (CustomUserDetails)
-        // authentication.getPrincipal();
-
-        // return ResponseEntity.ok(new JwtResponse(jwt,
-        // customUserDetails.getNickname()));
-        return ResponseEntity.ok(new JwtResponse(jwt, Utils.getNickname()));
+        return ResponseEntity.ok(authService.authenicate(email, snsType, snsId));
     }
 
     @PostMapping("/repassword")
@@ -98,6 +83,7 @@ public class PublicRestController {
         // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
+    @Operation(summary = "회원가입", description = "사용자 회원가입 API")
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
         System.out.println("signup controller");
@@ -107,6 +93,12 @@ public class PublicRestController {
             // return ResponseEntity.badRequest().body("회원 가입에 오류가 발생했습니다");
         }
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(@RequestHeader("Authorization") String refreshToken) {
+        refreshToken = refreshToken.replace("Bearer ", "");
+        return ResponseEntity.ok(authService.refreshTokens(refreshToken));
     }
 
     // 회원에게 활성화이메일 보내기
