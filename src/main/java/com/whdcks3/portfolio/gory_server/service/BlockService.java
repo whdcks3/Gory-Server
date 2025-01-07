@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.whdcks3.portfolio.gory_server.data.dto.UserSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.models.Block;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.repositories.BlockRespository;
@@ -33,8 +34,9 @@ public class BlockService {
     }
 
     // 차단된 모든 사용자 목록 조회
-    public List<Block> getBlockUsers(User user) {
-        return blockRespository.findByBlocker(user);
+    public List<UserSimpleDto> getBlockUsers(User user) {
+        return blockRespository.findByBlocker(user).stream().map(block -> UserSimpleDto.toDto(block.getBlocked()))
+                .toList();
     }
 
     public List<Block> getUserBlockedMe(User user) {

@@ -57,8 +57,10 @@ public class Squad extends BaseEntity {
 
     private int maxParticipants, minAge, maxAge;
 
+    @Column(nullable = false)
     private LocalDate date;
 
+    @Column(nullable = true)
     private LocalTime time;
 
     @Enumerated(EnumType.STRING)
@@ -76,6 +78,9 @@ public class Squad extends BaseEntity {
 
     @OneToMany(mappedBy = "squad")
     private List<SquadParticipant> participants = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean closed = false;
 
     @lombok.Builder
     public Squad(User user, SquadRequest req) {

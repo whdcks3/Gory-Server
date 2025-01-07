@@ -54,8 +54,7 @@ public class BlockController {
     // 차단된 사용자 조회
     @GetMapping
     public ResponseEntity<?> getBlockedUsers(@AuthenticationPrincipal User user, @PathVariable User userId) {
-        blockService.getBlockUsers(userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(blockService.getBlockUsers(userId));
         // try {
         // blockService.getBlockUsers(userId);
         // } catch (ValidationException e) {

@@ -67,7 +67,7 @@ public class PublicRestController {
     @PostMapping("/signin")
     public ResponseEntity<Map<String, String>> authenticateUser(@Valid @RequestParam String email,
             @Valid @RequestParam String snsType, @Valid @RequestParam String snsId) {
-        return ResponseEntity.ok(authService.authenicate(email, snsType, snsId));
+        return ResponseEntity.ok(authService.authenticate(email, snsType, snsId));
     }
 
     @PostMapping("/repassword")

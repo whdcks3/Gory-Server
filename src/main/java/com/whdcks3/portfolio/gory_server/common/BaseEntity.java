@@ -28,7 +28,7 @@ public abstract class BaseEntity implements Serializable {
     private Long pid;
 
     @CreationTimestamp
-    @Column(nullable = false, name = "reg_dt", updatable = false)
+    @Column(nullable = false, name = "created_at", updatable = false)
     @ColumnDefault("current_timestamp")
     private LocalDateTime createdAt;
 
