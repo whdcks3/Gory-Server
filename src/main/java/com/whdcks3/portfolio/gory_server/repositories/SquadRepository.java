@@ -17,14 +17,14 @@ public interface SquadRepository extends JpaRepository<Squad, Long> {
   @Query("""
       SELECT s FROM Squad s
       WHERE (:category = '전체' OR s.category = :category)
-        AND (:regionMain = '전체' OR s.regionMain = :regionMain)
-        AND (:regionMain = '전체' OR :regionSub = '전체' OR s.regionSub = :regionSub)
-        AND (:recruitingOnly = false OR s.closed = false)
-        AND (
-              s.date > CURRENT_DATE OR
-              (s.date = CURRENT_DATE AND s.time IS NULL OR s.time >= CURRENT_TIME)
-        )
-        AND s.owner NOT IN :excludedUsers
+      AND (:regionMain = '전체' OR s.regionMain = :regionMain)
+      AND (:regionMain = '전체' OR :regionSub = '전체' OR s.regionSub = :regionSub)
+      AND (:recruitingOnly = false OR s.closed = false)
+      AND (
+      s.date > CURRENT_DATE OR
+      (s.date = CURRENT_DATE AND s.time IS NULL OR s.time >= CURRENT_TIME)
+      )
+      AND s.owner NOT IN :excludedUsers
       """)
   Page<Squad> findFilteredSquadsWithExclusion(String category, String regionMain, String regionSub,
       boolean recruitingOnly, List<User> excludedUsers, Pageable pageable);

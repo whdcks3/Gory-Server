@@ -39,7 +39,4 @@ public class BlockService {
                 .toList();
     }
 
-    public List<Block> getUserBlockedMe(User user) {
-        return blockRespository.findByBlocked(user);
-    }
 }

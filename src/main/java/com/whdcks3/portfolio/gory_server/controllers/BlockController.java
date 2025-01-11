@@ -51,7 +51,7 @@ public class BlockController {
         // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
-    // 차단된 사용자 조회
+    // 차단한 사용자 조회
     @GetMapping
     public ResponseEntity<?> getBlockedUsers(@AuthenticationPrincipal User user, @PathVariable User userId) {
         return ResponseEntity.ok(blockService.getBlockUsers(userId));

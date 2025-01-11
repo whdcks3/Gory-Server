@@ -83,7 +83,7 @@ public class UserRestController {
         // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
-    @PutMapping("update_fcm")
+    @PutMapping("/update_fcm")
     public ResponseEntity<?> updateFcm(@AuthenticationPrincipal User user, @RequestParam String token) {
         userService.updateFcm(user, token);
         return ResponseEntity.ok().build();
