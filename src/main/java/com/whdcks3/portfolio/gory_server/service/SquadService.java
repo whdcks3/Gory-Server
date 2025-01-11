@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.whdcks3.portfolio.gory_server.data.dto.SquadDetailDto;
 import com.whdcks3.portfolio.gory_server.data.dto.SquadFilterRequest;
 import com.whdcks3.portfolio.gory_server.data.dto.SquadSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.dto.UserSimpleDto;
@@ -84,7 +85,10 @@ public class SquadService {
     }
 
     public SquadDetailDto detail(User user, long squadPid) {
-        Squad squad = squadRepository.findById(squadPid).orElseThrow();
+        Squad squad = squadRepository.findById(squadPid)
+                .orElseThrow(() -> new IllegalArgumentException("해당 suqad를 찾을 수 없습니다."));
+        // List<UserSimpleDto> members =
+        return SquadDetailDto.toDto(user, squad);
     }
 
     private List<User> getExcludedUsers(User currentUser) {

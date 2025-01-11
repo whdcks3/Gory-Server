@@ -92,7 +92,7 @@ public class UserService {
 
     }
 
-    // 회원가입에 이메일 인증 링크
+    // 계정찾기 이메일 인증
     public void sendEmailLink(String email) {
         EmailVerification verificationToken = new EmailVerification();
         String token = UUID.randomUUID().toString();
