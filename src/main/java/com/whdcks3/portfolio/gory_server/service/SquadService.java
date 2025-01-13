@@ -91,6 +91,13 @@ public class SquadService {
         return SquadDetailDto.toDto(user, squad);
     }
 
+    public void approveUser(User user, Long sqaudId) {
+        SquadParticipant squad = squadParticipantRepository.findById(sqaudId).orElseThrow();
+        User user
+
+        if (!squad.get)
+    }
+
     private List<User> getExcludedUsers(User currentUser) {
         List<User> blockedUsers = blockRespository.findByBlocker(currentUser).stream()
                 .map(Block::getBlocked)
