@@ -9,4 +9,5 @@ import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 public interface SquadParticipantRepository extends JpaRepository<SquadParticipant, Long> {
 
     List<SquadParticipant> findBySquadParticipantId(Long squadParticipantId);
+
 }

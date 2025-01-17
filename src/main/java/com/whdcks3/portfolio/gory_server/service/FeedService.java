@@ -237,7 +237,7 @@ public class FeedService {
     private List<User> getExcludedUsers(User user) {
         List<User> blockedUsers = blockRespository.findByBlocker(user).stream().map(Block::getBlocked)
                 .collect(Collectors.toList());
-        List<User> blockedByUsers = blockRespository.findByBlocked(user).stream().map(Block::getBlocked)
+        List<User> blockedByUsers = blockRespository.findByBlocked(user).stream().map(Block::getBlocker)
                 .collect(Collectors.toList());
         blockedUsers.addAll(blockedByUsers);
         return blockedUsers.stream().distinct().toList();

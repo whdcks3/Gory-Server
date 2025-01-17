@@ -55,7 +55,6 @@ public class SquadParticipant {
         JOINED,
         PENDING,
         REJECTED,
-        KICKED_OUT,
-        LEFT
+        KICKED_OUT
     }
 }

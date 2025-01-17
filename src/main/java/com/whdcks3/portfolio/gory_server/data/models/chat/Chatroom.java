@@ -20,7 +20,7 @@ import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.models.user.UserChatroom;
-import com.whdcks3.portfolio.gory_server.data.requests.ChatroomRequests;
+import com.whdcks3.portfolio.gory_server.data.requests.ChatroomRequest;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,7 +46,7 @@ public class Chatroom extends BaseEntity {
     @Size(max = 1000)
     private String notice;
 
-    private Integer memberCount;
+    private Integer maxParticipantCount;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     @Size(max = 100)
@@ -62,21 +62,21 @@ public class Chatroom extends BaseEntity {
     private List<UserChatroom> users = new ArrayList<>();
 
     @lombok.Builder
-    public Chatroom(User user, ChatroomRequests req) {
+    public Chatroom(User user, ChatroomRequest req) {
         this.user = user;
         this.category = req.getCategory();
         this.content = req.getCategory();
         this.title = req.getTitle();
-        this.memberCount = req.getMemberCount();
+        this.maxParticipantCount = req.getMaxParticipantCount();
         this.reportCount = 0;
         this.currentCount = 1;
     }
 
-    public void update(ChatroomRequests req) {
+    public void update(ChatroomRequest req) {
         this.category = req.getCategory();
         this.content = req.getContent();
         this.title = req.getTitle();
-        this.memberCount = req.getMemberCount();
+        this.maxParticipantCount = req.getMaxParticipantCount();
     }
 
     public boolean isJoining(User user) {
