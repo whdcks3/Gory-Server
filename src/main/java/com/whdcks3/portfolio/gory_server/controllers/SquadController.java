@@ -82,9 +82,9 @@ public class SquadController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{sid}/approve/{id}")
+    @PostMapping("/{sid}/approve/{uid}")
     public ResponseEntity<?> approveParticipant(@AuthenticationPrincipal User user, @PathVariable Long sid,
-            @PathVariable Long userId) {
+            @PathVariable("uid") Long userId) {
         squadService.approveParticipant(user, userId, sid);
         return ResponseEntity.ok().build();
     }

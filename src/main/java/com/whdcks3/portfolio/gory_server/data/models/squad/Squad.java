@@ -125,7 +125,7 @@ public class Squad extends BaseEntity {
     public boolean isJoining(User user) {
         for (SquadParticipant squadParticipant : participants) {
             if (squadParticipant.getUser().getPid() == user.getPid()
-                    && squadParticipant.getStatus().equals(SquadParticipant.ParticipationStatus.JOINED)) {
+                    && squadParticipant.getStatus().equals(SquadParticipant.SquadParticipationStatus.JOINED)) {
                 return true;
             }
         }

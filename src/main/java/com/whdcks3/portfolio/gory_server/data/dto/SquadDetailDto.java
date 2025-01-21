@@ -9,7 +9,7 @@ import java.util.Locale;
 
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
-import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.ParticipationStatus;
+import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.SquadParticipationStatus;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.enums.Gender;
 
@@ -57,44 +57,49 @@ public class SquadDetailDto {
         int maxParticipantCount = squad.getMaxParticipants();
         boolean isOwner = squad.getUser() == user;
         boolean hasPendingUsers = squad.getParticipants().stream()
-                .anyMatch(participant -> participant.getStatus() == ParticipationStatus.PENDING);
+                .anyMatch(participant -> participant.getStatus() == SquadParticipationStatus.PENDING);
         List<UserSimpleDto> participants = squad.getParticipants().stream()
-                .filter(participant -> participant.getStatus() == ParticipationStatus.JOINED)
+                .filter(participant -> participant.getStatus() == SquadParticipationStatus.JOINED)
                 .map(participant -> UserSimpleDto.toDto(participant.getUser())).toList();
         long ownerId = squad.getUser().getPid();
         String btnMsg;
         boolean btnEnabled = false;
 
-        LocalDateTime squadDt = LocalDateTime.of(squad.getDate(),
-                squad.getTime() == null ? LocalTime.of(23, 59, 59) : squad.getTime());
-        if (!squadDt.isBefore(LocalDateTime.now())) {
-            btnMsg = "종료된 모임";
-        } else if (squad.getParticipants().stream().anyMatch(participant -> participant.getUser() == user)) {
-            SquadParticipant squadParticipant = squad.getParticipants().stream()
-                    .filter(participant -> participant.getUser() == user).findAny().get();
-            switch (squadParticipant.getStatus()) {
-                case JOINED:
-                    btnMsg = "대화방 가기";
-                    btnEnabled = true;
-                    break;
-                case KICKED_OUT:
-                    btnMsg = "모임장에 의해 내보내진 모임";
-                    break;
-                case PENDING:
-                    btnMsg = "참여 승인을 기다리는 중...";
-                    break;
-                case REJECTED:
-                    btnMsg = "참여가 거절된 모임";
-                    break;
-                default:
-                    btnMsg = "대화방 가기";
-                    btnEnabled = true;
-            }
-        } else if (squad.isClosed()) {
-            btnMsg = "마감된 모임";
-        } else {
-            btnMsg = "참여하기";
+        if (user.equals(squad.getUser())) {
+            btnMsg = "대화방 가기";
             btnEnabled = true;
+        } else {
+            LocalDateTime squadDt = LocalDateTime.of(squad.getDate(),
+                    squad.getTime() == null ? LocalTime.of(23, 59, 59) : squad.getTime());
+            if (!squadDt.isBefore(LocalDateTime.now())) {
+                btnMsg = "종료된 모임";
+            } else if (squad.getParticipants().stream().anyMatch(participant -> participant.getUser() == user)) {
+                SquadParticipant squadParticipant = squad.getParticipants().stream()
+                        .filter(participant -> participant.getUser() == user).findAny().get();
+                switch (squadParticipant.getStatus()) {
+                    case JOINED:
+                        btnMsg = "대화방 가기";
+                        btnEnabled = true;
+                        break;
+                    case KICKED_OUT:
+                        btnMsg = "모임장에 의해 내보내진 모임";
+                        break;
+                    case PENDING:
+                        btnMsg = "참여 승인을 기다리는 중...";
+                        break;
+                    case REJECTED:
+                        btnMsg = "참여가 거절된 모임";
+                        break;
+                    default:
+                        btnMsg = "대화방 가기";
+                        btnEnabled = true;
+                }
+            } else if (squad.isClosed()) {
+                btnMsg = "마감된 모임";
+            } else {
+                btnMsg = "참여하기";
+                btnEnabled = true;
+            }
         }
 
         return new SquadDetailDto(status, category, title, notice, datetime, region, genderRequirement, ageRequirement,

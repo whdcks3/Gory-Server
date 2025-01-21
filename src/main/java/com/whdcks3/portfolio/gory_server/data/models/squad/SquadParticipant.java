@@ -42,16 +42,16 @@ public class SquadParticipant {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ParticipationStatus status;
+    private SquadParticipationStatus status;
 
     public SquadParticipant(User user, Squad squad) {
         this.user = user;
         this.squad = squad;
-        this.status = squad.getJoinType().equals(JoinType.DIRECT) ? ParticipationStatus.JOINED
-                : ParticipationStatus.PENDING;
+        this.status = squad.getJoinType().equals(JoinType.DIRECT) ? SquadParticipationStatus.JOINED
+                : SquadParticipationStatus.PENDING;
     }
 
-    public enum ParticipationStatus {
+    public enum SquadParticipationStatus {
         JOINED,
         PENDING,
         REJECTED,

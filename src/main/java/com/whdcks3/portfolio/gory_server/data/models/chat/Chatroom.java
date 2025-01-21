@@ -18,6 +18,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
+import com.whdcks3.portfolio.gory_server.data.models.chat.ChatroomParticipants.ChatroomParticipationStatus;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.models.user.UserChatroom;
 import com.whdcks3.portfolio.gory_server.data.requests.ChatroomRequest;
@@ -59,7 +60,7 @@ public class Chatroom extends BaseEntity {
     private int currentCount;
 
     @OneToMany(mappedBy = "chatroom")
-    private List<UserChatroom> users = new ArrayList<>();
+    private List<ChatroomParticipants> users = new ArrayList<>();
 
     @lombok.Builder
     public Chatroom(User user, ChatroomRequest req) {
@@ -80,8 +81,9 @@ public class Chatroom extends BaseEntity {
     }
 
     public boolean isJoining(User user) {
-        for (UserChatroom userChatroom : users) {
-            if (userChatroom.getUser().getPid() == user.getPid() && userChatroom.getConfirmed()) {
+        for (ChatroomParticipants participant : users) {
+            if (participant.getUser().getPid() == user.getPid()
+                    && participant.getStatus() == ChatroomParticipationStatus.JOINED) {
                 return true;
             }
         }
@@ -98,6 +100,13 @@ public class Chatroom extends BaseEntity {
 
     public void increaseReportCount() {
         this.reportCount++;
+    }
+
+    public void banUser(User target) {
+        ChatroomParticipants participant = users.stream().filter(u -> u.getUser().equals(target)).findAny()
+                .orElseThrow();
+        participant.setStatus(ChatroomParticipationStatus.KICKED_OUT);
+        decreaseCurrentCount();
     }
 
 }

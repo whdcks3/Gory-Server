@@ -7,14 +7,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import org.hibernate.annotations.DynamicInsert;
-
-import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,10 +19,7 @@ import lombok.Setter;
 @Table(name = "report_squad")
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
 public class ReportSquad extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,17 +28,17 @@ public class ReportSquad extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_pid", nullable = false)
-    private User reporter;
+    private User reproter;
 
     String category;
 
     @Size(max = 500)
-    private String content;
+    private String cotent;
 
-    public ReportSquad(String category, String content, User reporter, Squad squad) {
-        this.category = category;
-        this.content = content;
-        this.reporter = reporter;
+    public ReportSquad(Squad squad, User reporter, String category, String cotent) {
         this.suqad = squad;
+        this.reproter = reporter;
+        this.category = category;
+        this.cotent = cotent;
     }
 }

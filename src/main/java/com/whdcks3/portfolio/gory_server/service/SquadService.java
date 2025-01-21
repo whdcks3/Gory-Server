@@ -20,7 +20,7 @@ import com.whdcks3.portfolio.gory_server.data.dto.UserSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.models.Block;
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
-import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.ParticipationStatus;
+import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.SquadParticipationStatus;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SquadRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.DataResponse;
@@ -75,7 +75,7 @@ public class SquadService {
         }
 
         int joinedCount = (int) squad.getParticipants().stream()
-                .filter(paritipant -> paritipant.getStatus() == ParticipationStatus.JOINED)
+                .filter(paritipant -> paritipant.getStatus() == SquadParticipationStatus.JOINED)
                 .count();
         if (joinedCount < req.getMaxParticipants()) {
             throw new IllegalArgumentException(String.format("이미 %d명이 참여중이라 인원 수정이 어려워요.", joinedCount));
@@ -134,7 +134,7 @@ public class SquadService {
             throw new IllegalArgumentException("종료된 모임입니다.");
         }
         if (squad.getParticipants().stream()
-                .filter(participant -> participant.getStatus() == ParticipationStatus.JOINED)
+                .filter(participant -> participant.getStatus() == SquadParticipationStatus.JOINED)
                 .count() >= squad.getMaxParticipants()) {
             throw new IllegalArgumentException("참여 인원이 찼습니다.");
         }
@@ -149,7 +149,8 @@ public class SquadService {
 
         SquadParticipant squadParticipant = new SquadParticipant(user, squad);
         squadParticipant.setStatus(
-                squad.getJoinType() == JoinType.APPROVAL ? ParticipationStatus.PENDING : ParticipationStatus.JOINED);
+                squad.getJoinType() == JoinType.APPROVAL ? SquadParticipationStatus.PENDING
+                        : SquadParticipationStatus.JOINED);
         squadParticipant = squadParticipantRepository.save(squadParticipant);
         squad.getParticipants().add(squadParticipant);
 
@@ -175,13 +176,13 @@ public class SquadService {
         }
 
         if (squad.getParticipants().stream()
-                .filter(participant -> participant.getStatus() == ParticipationStatus.JOINED)
+                .filter(participant -> participant.getStatus() == SquadParticipationStatus.JOINED)
                 .count() >= squad.getMaxParticipants()) {
             throw new IllegalArgumentException("참여 인원이 찼습니다.");
         }
         SquadParticipant participant = squad.getParticipants().stream().filter(p -> p.getUser() == participantUser)
                 .findAny().orElseThrow();
-        participant.setStatus(ParticipationStatus.JOINED);
+        participant.setStatus(SquadParticipationStatus.JOINED);
         squadParticipantRepository.save(participant);
     }
 
@@ -198,7 +199,7 @@ public class SquadService {
 
         SquadParticipant participant = squad.getParticipants().stream().filter(p -> p.getUser() == participantUser)
                 .findAny().orElseThrow();
-        participant.setStatus(ParticipationStatus.REJECTED);
+        participant.setStatus(SquadParticipationStatus.REJECTED);
         squadParticipantRepository.save(participant);
     }
 
@@ -215,7 +216,7 @@ public class SquadService {
 
         SquadParticipant participant = squad.getParticipants().stream().filter(p -> p.getUser() == participantUser)
                 .findAny().orElseThrow();
-        participant.setStatus(ParticipationStatus.KICKED_OUT);
+        participant.setStatus(SquadParticipationStatus.KICKED_OUT);
         squadParticipantRepository.save(participant);
     }
 
