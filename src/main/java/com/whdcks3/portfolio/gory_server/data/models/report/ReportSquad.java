@@ -7,7 +7,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import com.whdcks3.portfolio.gory_server.common.BaseEntity;
+import com.whdcks3.portfolio.gory_server.common.Report;
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReportSquad extends BaseEntity {
+public class ReportSquad extends Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "squad_pid", nullable = false)

@@ -8,8 +8,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.DynamicInsert;
-
-import com.whdcks3.portfolio.gory_server.common.BaseEntity;
+import com.whdcks3.portfolio.gory_server.common.Report;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.Getter;
@@ -22,7 +21,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @DynamicInsert
-public class ReportUser extends BaseEntity {
+public class ReportUser extends Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reproter_pid", nullable = false)

@@ -43,6 +43,7 @@ public class ReportService {
         User reporter = userRepository.findById(reporterId).orElseThrow();
         User reported = userRepository.findById(reportedId).orElseThrow();
         ReportUser report = new ReportUser(reporter, reported, req.getCategory(), req.getCategory());
+        reported.increaseReportCount();
         reportUserRepository.save(report);
     }
 
@@ -51,6 +52,7 @@ public class ReportService {
         User reporter = userRepository.findById(reporterId).orElseThrow();
         Squad squad = squadRepository.findById(squadId).orElseThrow();
         ReportSquad report = new ReportSquad(squad, reporter, req.getCategory(), req.getContent());
+        squad.increaseReportCount();
         reportSquadRepository.save(report);
     }
 
@@ -59,6 +61,7 @@ public class ReportService {
         User reporter = userRepository.findById(reporterId).orElseThrow();
         Feed feed = feedRepository.findById(feedId).orElseThrow();
         ReportFeed report = new ReportFeed(reporter, feed, req.getCategory(), req.getContent());
+        feed.increaseReportCount();
         reportFeedRepository.save(report);
     }
 
