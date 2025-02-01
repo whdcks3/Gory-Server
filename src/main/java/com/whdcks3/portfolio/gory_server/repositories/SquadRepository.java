@@ -30,4 +30,5 @@ public interface SquadRepository extends JpaRepository<Squad, Long> {
         Page<Squad> findFilteredSquadsWithExclusion(String category, String regionMain, String regionSub,
                         boolean recruitingOnly, List<User> excludedUsers, Pageable pageable);
 
+        List<Squad> findAllByUser(User user);
 }

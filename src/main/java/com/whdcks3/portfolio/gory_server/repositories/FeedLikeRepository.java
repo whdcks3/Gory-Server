@@ -11,7 +11,7 @@ import com.whdcks3.portfolio.gory_server.data.models.feed.FeedLike;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 @Repository
-public interface FeedLikeRespository extends JpaRepository<FeedLike, Long> {
+public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
     boolean existsByFeedAndUser(Feed feed, User user);
 
     Optional<FeedLike> findByFeedAndUser(Feed feed, User user);

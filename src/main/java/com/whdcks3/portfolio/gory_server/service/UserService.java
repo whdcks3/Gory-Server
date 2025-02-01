@@ -1,7 +1,6 @@
 package com.whdcks3.portfolio.gory_server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,34 +10,25 @@ import com.google.api.pathtemplate.ValidationException;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.models.feed.Feed;
 import com.whdcks3.portfolio.gory_server.data.models.feed.FeedComment;
-import com.whdcks3.portfolio.gory_server.data.models.feed.FeedImage;
 import com.whdcks3.portfolio.gory_server.data.models.feed.FeedLike;
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
-import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
 import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
-import com.whdcks3.portfolio.gory_server.exception.UsernameNotFoundException;
 import com.whdcks3.portfolio.gory_server.repositories.FeedCommentRepository;
-import com.whdcks3.portfolio.gory_server.repositories.FeedLikeRespository;
+import com.whdcks3.portfolio.gory_server.repositories.FeedLikeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.FeedRepository;
 import com.whdcks3.portfolio.gory_server.repositories.SquadParticipantRepository;
 import com.whdcks3.portfolio.gory_server.repositories.SquadRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import javax.transaction.TransactionScoped;
 import javax.transaction.Transactional;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern;
 
 @Service
 public class UserService {
@@ -53,7 +43,7 @@ public class UserService {
     FeedCommentRepository feedCommentRepository;
 
     @Autowired
-    FeedLikeRespository feedLikeRespository;
+    FeedLikeRepository feedLikeRepository;
 
     @Autowired
     SquadParticipantRepository squadParticipantRepository;
@@ -188,26 +178,33 @@ public class UserService {
         }
         feedCommentRepository.deleteAll(comments);
 
-        List<FeedLike> likes = feedLikeRespository.findAllByUser(user);
+        List<FeedLike> likes = feedLikeRepository.findAllByUser(user);
         for (FeedLike feedLike : likes) {
-            feedLike.getFeed().decreaseCommentCount();
+            feedLike.getFeed().decreaseLikeCount();
             feedRepository.save(feedLike.getFeed());
         }
+        feedLikeRepository.deleteAll(likes);
+
         List<Feed> feeds = feedRepository.findAllByUser(user);
         for (Feed feed : feeds) {
             feedCommentRepository.deleteAll(feed.getComments());
-            feedLikeRespository.deleteAll(feedLikeRespository.findAllByFeed(feed));
+            feedLikeRepository.deleteAll(feedLikeRepository.findAllByFeed(feed));
             feedService.deleteFeed(user, feed.getPid());
         }
 
-        List<SquadParticipant> squadParticipants = squadParticipantRepository.findAllByUser(user);
-        for (SquadParticipant squadpParticipant : squadParticipants) {
-            Squad squad = squadpParticipant.getSquad();
-            squad.decreaseCurrentCount();
-            squadRepository.save(squad);
-            squadParticipantRepository.delete(squadpParticipant);
+        List<Squad> squads = squadRepository.findAllByUser(user);
+        for (Squad squad : squads) {
+            squadParticipantRepository.deleteAllBySquad(squad);
+            squadRepository.delete(squad);
         }
 
+        List<SquadParticipant> squadParticipants = squadParticipantRepository.findAllByUser(user);
+        for (SquadParticipant squadParticipant : squadParticipants) {
+            Squad squad = squadParticipant.getSquad();
+            squad.decreaseCurrentCount();
+            squadRepository.save(squad);
+            squadParticipantRepository.delete(squadParticipant);
+        }
         userRepository.delete(user);
     }
 }
