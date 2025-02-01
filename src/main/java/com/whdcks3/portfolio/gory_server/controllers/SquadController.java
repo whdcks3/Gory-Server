@@ -1,6 +1,5 @@
 package com.whdcks3.portfolio.gory_server.controllers;
 
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

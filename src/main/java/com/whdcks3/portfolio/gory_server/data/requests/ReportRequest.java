@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReportRequest {
+    private Long targetId;
+
     private String content;
 
     @NotBlank

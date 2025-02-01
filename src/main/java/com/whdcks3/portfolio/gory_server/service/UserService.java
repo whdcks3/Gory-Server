@@ -5,20 +5,35 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.pathtemplate.ValidationException;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
+import com.whdcks3.portfolio.gory_server.data.models.feed.Feed;
+import com.whdcks3.portfolio.gory_server.data.models.feed.FeedComment;
+import com.whdcks3.portfolio.gory_server.data.models.feed.FeedImage;
+import com.whdcks3.portfolio.gory_server.data.models.feed.FeedLike;
+import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
+import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
 import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
 import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
 import com.whdcks3.portfolio.gory_server.exception.UsernameNotFoundException;
+import com.whdcks3.portfolio.gory_server.repositories.FeedCommentRepository;
+import com.whdcks3.portfolio.gory_server.repositories.FeedLikeRespository;
+import com.whdcks3.portfolio.gory_server.repositories.FeedRepository;
+import com.whdcks3.portfolio.gory_server.repositories.SquadParticipantRepository;
+import com.whdcks3.portfolio.gory_server.repositories.SquadRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.transaction.TransactionScoped;
 import javax.transaction.Transactional;
@@ -32,6 +47,21 @@ public class UserService {
     UserRepository userRepository;
 
     @Autowired
+    FeedRepository feedRepository;
+
+    @Autowired
+    FeedCommentRepository feedCommentRepository;
+
+    @Autowired
+    FeedLikeRespository feedLikeRespository;
+
+    @Autowired
+    SquadParticipantRepository squadParticipantRepository;
+
+    @Autowired
+    SquadRepository squadRepository;
+
+    @Autowired
     EmailUtils emailUtils;
 
     @Autowired
@@ -39,6 +69,12 @@ public class UserService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    FileService fileService;
+
+    @Autowired
+    FeedService feedService;
 
     // 기본 닉네임 생성
     public String generateNickname() {
@@ -114,5 +150,64 @@ public class UserService {
     public void updateFcm(User user, String fcmToken) {
         user.setFcmToken(fcmToken);
         userRepository.save(user);
+    }
+
+    public void updateContent(User user, UserModifyRequest req) {
+        user.setIntroduction(req.getIntroduction());
+        userRepository.save(user);
+    }
+
+    public void updateNickname(User user, UserModifyRequest req) {
+        user.setNickname(req.getNickname());
+        userRepository.save(user);
+    }
+
+    public void updateProfile(User user, UserModifyRequest req) {
+        deleteImage(user);
+        saveProfileImage(user, req.getProfile());
+    }
+
+    private void saveProfileImage(User user, MultipartFile image) {
+        String filename = fileService.upload(image);
+        user.setImageUrl(filename);
+    }
+
+    private void deleteImage(User user) {
+        if (user.getImageUrl().endsWith("avatar_placeholder.png")) {
+            return;
+        }
+        fileService.delete(user.getImageUrl());
+    }
+
+    @Transactional
+    public void withdrawal(User user) {
+        List<FeedComment> comments = feedCommentRepository.findAllByUser(user);
+        for (FeedComment feedComment : comments) {
+            feedComment.getFeed().decreaseCommentCount();
+            feedRepository.save(feedComment.getFeed());
+        }
+        feedCommentRepository.deleteAll(comments);
+
+        List<FeedLike> likes = feedLikeRespository.findAllByUser(user);
+        for (FeedLike feedLike : likes) {
+            feedLike.getFeed().decreaseCommentCount();
+            feedRepository.save(feedLike.getFeed());
+        }
+        List<Feed> feeds = feedRepository.findAllByUser(user);
+        for (Feed feed : feeds) {
+            feedCommentRepository.deleteAll(feed.getComments());
+            feedLikeRespository.deleteAll(feedLikeRespository.findAllByFeed(feed));
+            feedService.deleteFeed(user, feed.getPid());
+        }
+
+        List<SquadParticipant> squadParticipants = squadParticipantRepository.findAllByUser(user);
+        for (SquadParticipant squadpParticipant : squadParticipants) {
+            Squad squad = squadpParticipant.getSquad();
+            squad.decreaseCurrentCount();
+            squadRepository.save(squad);
+            squadParticipantRepository.delete(squadpParticipant);
+        }
+
+        userRepository.delete(user);
     }
 }

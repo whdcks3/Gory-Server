@@ -141,7 +141,7 @@ public class User extends BaseEntity {
     public void update(UserModifyRequest req, String url, String path) {
         this.introduction = req.getIntroduction();
         System.out.println("update file");
-        if (req.getImage() != null && !req.getImage().isEmpty()) {
+        if (req.getProfile() != null && !req.getProfile().isEmpty()) {
             deleteImage();
             this.imageUrl = url;
         }
