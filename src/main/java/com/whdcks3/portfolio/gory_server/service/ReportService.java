@@ -39,15 +39,17 @@ public class ReportService {
     FeedRepository feedRepository;
 
     // 유저 신고
-    public void reportUser(User reporter, ReportRequest req) {
-        User reported = userRepository.findById(req.getTargetId()).orElseThrow();
+    public void reportUser(Long reporterId, Long reportedId, ReportRequest req) {
+        User reporter = userRepository.findById(reporterId).orElseThrow();
+        User reported = userRepository.findById(reportedId).orElseThrow();
         ReportUser report = new ReportUser(reporter, reported, req.getCategory(), req.getCategory());
         reported.increaseReportCount();
         reportUserRepository.save(report);
     }
 
     // 모임 신고
-    public void reportSquad(User reporter, Long squadId, ReportRequest req) {
+    public void reportSquad(Long reporterId, Long squadId, ReportRequest req) {
+        User reporter = userRepository.findById(reporterId).orElseThrow();
         Squad squad = squadRepository.findById(squadId).orElseThrow();
         ReportSquad report = new ReportSquad(squad, reporter, req.getCategory(), req.getContent());
         squad.increaseReportCount();
@@ -55,7 +57,8 @@ public class ReportService {
     }
 
     // 피드 신고
-    public void reportFeed(User reporter, Long feedId, ReportRequest req) {
+    public void reportFeed(Long reporterId, Long feedId, ReportRequest req) {
+        User reporter = userRepository.findById(reporterId).orElseThrow();
         Feed feed = feedRepository.findById(feedId).orElseThrow();
         ReportFeed report = new ReportFeed(reporter, feed, req.getCategory(), req.getContent());
         feed.increaseReportCount();
