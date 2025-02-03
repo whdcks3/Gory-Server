@@ -31,7 +31,7 @@ import com.whdcks3.portfolio.gory_server.firebase.FirebasePublisherUtil;
 import com.whdcks3.portfolio.gory_server.repositories.BlockRespository;
 import com.whdcks3.portfolio.gory_server.repositories.FeedCommentRepository;
 import com.whdcks3.portfolio.gory_server.repositories.FeedImageRepository;
-import com.whdcks3.portfolio.gory_server.repositories.FeedLikeRespository;
+import com.whdcks3.portfolio.gory_server.repositories.FeedLikeRepository;
 import com.whdcks3.portfolio.gory_server.repositories.FeedRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
@@ -44,7 +44,7 @@ public class FeedService {
     private final FeedImageRepository feedImageRepository;
     private final UserRepository userRepository;
     private final FileService fileService;
-    private final FeedLikeRespository feedLikeRespository;
+    private final FeedLikeRepository feedLikeRespository;
     private final FeedCommentRepository feedCommentRepository;
     private final FirebasePublisherUtil firebasePublisherUtil;
     private final BlockRespository blockRespository;
