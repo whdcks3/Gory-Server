@@ -1,6 +1,5 @@
 package com.whdcks3.portfolio.gory_server.controllers;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,8 +47,9 @@ public class SquadController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> deleteSquad(@AuthenticationPrincipal User user, @PathVariable Long sid) {
-        squadService.deleteSquad(user.getPid(), sid);
+    public ResponseEntity<?> deleteSquad(@AuthenticationPrincipal User user, @PathVariable Long sid,
+            @RequestParam(defaultValue = "false") boolean isForcedDelete) {
+        squadService.deleteSquad(user, sid, isForcedDelete);
         return ResponseEntity.ok().build();
     }
 

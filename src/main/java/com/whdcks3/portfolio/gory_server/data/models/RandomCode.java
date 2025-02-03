@@ -1,6 +1,5 @@
 package com.whdcks3.portfolio.gory_server.data.models;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;

@@ -1,8 +1,5 @@
 package com.whdcks3.portfolio.gory_server.controllers;
 
-import java.lang.annotation.Repeatable;
-
-import org.attoparser.dom.Comment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,24 +14,17 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.firebase.database.utilities.Validation;
-import com.google.rpc.context.AttributeContext.Response;
 import com.whdcks3.portfolio.gory_server.common.Utils;
-import com.whdcks3.portfolio.gory_server.data.dto.FeedSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.FeedRequest;
-import com.whdcks3.portfolio.gory_server.data.responses.CommonResponse;
-import com.whdcks3.portfolio.gory_server.exception.ValidationException;
-import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 import com.whdcks3.portfolio.gory_server.service.BlockService;
 import com.whdcks3.portfolio.gory_server.service.FeedService;
 
-import ch.qos.logback.classic.pattern.Util;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 

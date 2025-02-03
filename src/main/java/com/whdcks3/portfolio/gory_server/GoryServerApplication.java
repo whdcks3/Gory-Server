@@ -1,12 +1,9 @@
 package com.whdcks3.portfolio.gory_server;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-
-import com.whdcks3.portfolio.gory_server.enums.ERole;
 
 @SpringBootApplication
 public class GoryServerApplication {

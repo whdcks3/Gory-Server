@@ -1,26 +1,18 @@
 package com.whdcks3.portfolio.gory_server.data.models.user;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 
-import org.apache.tomcat.jni.Local;
 import org.hibernate.annotations.DynamicInsert;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,9 +21,7 @@ import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
-import com.whdcks3.portfolio.gory_server.enums.ERole;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
-import com.whdcks3.portfolio.gory_server.enums.OAuthProvider;
 import com.whdcks3.portfolio.gory_server.enums.Role;
 
 import lombok.AllArgsConstructor;
@@ -82,7 +72,7 @@ public class User extends BaseEntity {
     private LocalDate birth;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private Boolean receiveEvent, feedAlarm, feedLikeAlarm;
+    private Boolean receiveEvent, feedAlarm, feedLikeAlarm, squadChatAlarm, ChatroomAlarm;
 
     @Column(nullable = true, columnDefinition = "INT DEFAULT 0")
     private int reportCount;

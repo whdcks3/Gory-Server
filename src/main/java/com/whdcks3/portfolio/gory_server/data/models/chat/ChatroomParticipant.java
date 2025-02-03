@@ -11,14 +11,16 @@ import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class ChatroomParticipants extends BaseEntity {
+@Getter
+@Setter
+public class ChatroomParticipant extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_pid")

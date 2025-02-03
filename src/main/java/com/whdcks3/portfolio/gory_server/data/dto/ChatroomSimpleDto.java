@@ -1,7 +1,6 @@
 package com.whdcks3.portfolio.gory_server.data.dto;
 
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.whdcks3.portfolio.gory_server.data.models.chat.Chatroom;

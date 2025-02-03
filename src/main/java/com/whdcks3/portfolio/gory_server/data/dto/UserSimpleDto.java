@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 @Getter

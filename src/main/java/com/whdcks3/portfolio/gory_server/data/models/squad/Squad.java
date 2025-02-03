@@ -1,6 +1,5 @@
 package com.whdcks3.portfolio.gory_server.data.models.squad;
 
-import java.lang.annotation.Native;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
+import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.SquadParticipationStatus;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SquadRequest;
 import com.whdcks3.portfolio.gory_server.enums.Gender;
@@ -148,4 +148,8 @@ public class Squad extends BaseEntity {
         return this.genderRequirement.equals(Gender.ALL) || this.genderRequirement.equals(gender);
     }
 
+    public boolean isOnlyOneLeft() {
+        return participants.stream().filter(participant -> participant.getStatus() == SquadParticipationStatus.JOINED)
+                .count() == 1;
+    }
 }

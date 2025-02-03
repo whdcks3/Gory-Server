@@ -2,12 +2,10 @@ package com.whdcks3.portfolio.gory_server.service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +15,6 @@ import com.whdcks3.portfolio.gory_server.data.models.RandomCode;
 import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
-import com.whdcks3.portfolio.gory_server.enums.ERole;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.EmailVerificationRepository;
@@ -27,7 +24,6 @@ import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.security.service.CustomerUserDetailsServiceImpl;
 
 import java.util.Random;
-import java.util.Set;
 
 @Service
 public class AuthService {

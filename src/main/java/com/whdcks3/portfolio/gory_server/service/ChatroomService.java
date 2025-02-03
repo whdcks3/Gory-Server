@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
 import com.whdcks3.portfolio.gory_server.data.dto.ChatroomSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.dto.UserSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.models.chat.Chatroom;
+import com.whdcks3.portfolio.gory_server.data.models.chat.ChatroomParticipant;
+import com.whdcks3.portfolio.gory_server.data.models.chat.ChatroomParticipant.ChatroomParticipationStatus;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.ChatroomRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.DataResponse;
+import com.whdcks3.portfolio.gory_server.repositories.ChatroomParticipantRepository;
 import com.whdcks3.portfolio.gory_server.repositories.ChatroomRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
@@ -24,6 +27,9 @@ public class ChatroomService {
 
     @Autowired
     ChatroomRepository chatroomRepository;
+
+    @Autowired
+    ChatroomParticipantRepository chatroomParticipantRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -71,10 +77,36 @@ public class ChatroomService {
         Chatroom room = findChatroomById(chatroomId);
 
         validateOwner(user, room);
-
         room.banUser(participant);
 
         chatroomRepository.save(room);
+    }
+
+    @Transactional
+    private void deleteFromParticipant(User user) {
+        List<ChatroomParticipant> participants = chatroomParticipantRepository.findAllByUser(user);
+
+        for (ChatroomParticipant participant : participants) {
+            if (participant.getStatus() == ChatroomParticipationStatus.JOINED) {
+                participant.getChatroom().decreaseCurrentCount();
+            }
+            chatroomParticipantRepository.delete(participant);
+        }
+
+    }
+
+    @Transactional
+    private void deleteChatroomsByUser(User user) {
+        List<Chatroom> chatrooms = chatroomRepository.findAllByUser(user);
+        for (Chatroom chatroom : chatrooms) {
+            deleteChatroom(user, chatroom.getPid());
+        }
+    }
+
+    @Transactional
+    public void deleteByUser(User user) {
+        deleteChatroomsByUser(user);
+        deleteFromParticipant(user);
     }
 
     private Chatroom findChatroomById(Long chatroomId) {

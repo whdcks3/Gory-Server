@@ -3,11 +3,7 @@ package com.whdcks3.portfolio.gory_server.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,7 +40,7 @@ public class FeedService {
     private final FeedImageRepository feedImageRepository;
     private final UserRepository userRepository;
     private final FileService fileService;
-    private final FeedLikeRepository feedLikeRespository;
+    private final FeedLikeRepository feedLikeRepository;
     private final FeedCommentRepository feedCommentRepository;
     private final FirebasePublisherUtil firebasePublisherUtil;
     private final BlockRespository blockRespository;
@@ -142,7 +138,7 @@ public class FeedService {
 
     public void createFeedLike(Feed feed, User user) {
         FeedLike feedLike = new FeedLike(feed, user);
-        feedLikeRespository.save(feedLike);
+        feedLikeRepository.save(feedLike);
 
         String fcmToken = feed.getUser().getFcmToken();
         boolean isAlarm = feed.getUser().getFeedLikeAlarm();
@@ -154,12 +150,12 @@ public class FeedService {
     }
 
     public void removeFeedLike(Feed feed, User user) {
-        FeedLike feedLike = feedLikeRespository.findByFeedAndUser(feed, user).orElseThrow(null);
-        feedLikeRespository.delete(feedLike);
+        FeedLike feedLike = feedLikeRepository.findByFeedAndUser(feed, user).orElseThrow(null);
+        feedLikeRepository.delete(feedLike);
     }
 
     public boolean hasFeedLike(User user, Feed feed) {
-        return feedLikeRespository.existsByFeedAndUser(feed, user);
+        return feedLikeRepository.existsByFeedAndUser(feed, user);
     }
 
     // Feed Like END
@@ -190,10 +186,48 @@ public class FeedService {
     }
 
     // TODO : comments delete,차단기능
+    @Transactional
     public void deleteComment(Long commentId, Long userId) {
         FeedComment comment = feedCommentRepository.findByParentCommentPidAndPid(commentId,
                 userId).orElseThrow(null);
         feedCommentRepository.delete(comment);
+    }
+
+    @Transactional
+    private void deleteCommentsByUser(User user) {
+        List<FeedComment> comments = feedCommentRepository.findAllByUser(user);
+        for (FeedComment feedComment : comments) {
+            feedComment.getFeed().decreaseCommentCount();
+            feedRepository.save(feedComment.getFeed());
+        }
+        feedCommentRepository.deleteAll(comments);
+    }
+
+    @Transactional
+    private void deleteLikeByUser(User user) {
+        List<FeedLike> likes = feedLikeRepository.findAllByUser(user);
+        for (FeedLike feedLike : likes) {
+            feedLike.getFeed().decreaseLikeCount();
+            feedRepository.save(feedLike.getFeed());
+        }
+        feedLikeRepository.deleteAll(likes);
+    }
+
+    @Transactional
+    private void deleteFeedByUser(User user) {
+        List<Feed> feeds = feedRepository.findAllByUser(user);
+        for (Feed feed : feeds) {
+            feedCommentRepository.deleteAll(feed.getComments());
+            feedLikeRepository.deleteAll(feedLikeRepository.findAllByFeed(feed));
+            deleteFeed(user, feed.getPid());
+        }
+    }
+
+    @Transactional
+    public void deleteByUser(User user) {
+        deleteCommentsByUser(user);
+        deleteLikeByUser(user);
+        deleteFeedByUser(user);
     }
 
     // Validations

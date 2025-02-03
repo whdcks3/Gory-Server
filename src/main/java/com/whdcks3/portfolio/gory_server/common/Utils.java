@@ -1,7 +1,6 @@
 package com.whdcks3.portfolio.gory_server.common;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -1,10 +1,8 @@
 package com.whdcks3.portfolio.gory_server.data.dto;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
-import com.whdcks3.portfolio.gory_server.enums.Gender;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

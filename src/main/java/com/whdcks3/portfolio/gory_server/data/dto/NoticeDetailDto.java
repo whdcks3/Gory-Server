@@ -1,7 +1,6 @@
 package com.whdcks3.portfolio.gory_server.data.dto;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 import com.whdcks3.portfolio.gory_server.data.models.Notice;
 

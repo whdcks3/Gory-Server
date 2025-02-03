@@ -16,7 +16,6 @@ import com.whdcks3.portfolio.gory_server.common.Utils;
 import com.whdcks3.portfolio.gory_server.data.dto.SquadDetailDto;
 import com.whdcks3.portfolio.gory_server.data.dto.SquadFilterRequest;
 import com.whdcks3.portfolio.gory_server.data.dto.SquadSimpleDto;
-import com.whdcks3.portfolio.gory_server.data.dto.UserSimpleDto;
 import com.whdcks3.portfolio.gory_server.data.models.Block;
 import com.whdcks3.portfolio.gory_server.data.models.squad.Squad;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
@@ -84,10 +83,19 @@ public class SquadService {
     }
 
     @Transactional
-    public void deleteSquad(Long uid, Long sid) {
-        User user = userRepository.findById(uid).orElseThrow();
+    public void deleteSquad(User user, Long sid, boolean isForcedDelete) {
         Squad squad = squadRepository.findById(sid).orElseThrow();
         validateOwner(user, squad);
+
+        if (!isForcedDelete && !squad.isOnlyOneLeft()) {
+            throw new IllegalArgumentException("멤버를 모두 내보낸 다음 삭제할 수 있어요. 멤버 닉네임 옆의 '관리'를 눌러주세요");
+        }
+        // while (squad.getParticipants().size() > 0) {
+        // squadParticipantRepository.delete(squad.getParticipants().get(0));
+        // }
+        List<SquadParticipant> participants = squad.getParticipants();
+        squad.getParticipants().clear();
+        squadParticipantRepository.deleteAll(participants);
         squadRepository.delete(squad);
     }
 
@@ -217,6 +225,8 @@ public class SquadService {
         SquadParticipant participant = squad.getParticipants().stream().filter(p -> p.getUser() == participantUser)
                 .findAny().orElseThrow();
         participant.setStatus(SquadParticipationStatus.KICKED_OUT);
+        squad.decreaseCurrentCount();
+        squadRepository.save(squad);
         squadParticipantRepository.save(participant);
     }
 
@@ -234,6 +244,33 @@ public class SquadService {
                 .findAny().orElseThrow();
         squad.getParticipants().remove(participant);
         squadParticipantRepository.delete(participant);
+    }
+
+    @Transactional
+    private void deleteFromParticipatedByUser(User user) {
+        List<SquadParticipant> squadParticipants = squadParticipantRepository.findAllByUser(user);
+        for (SquadParticipant squadParticipant : squadParticipants) {
+            Squad squad = squadParticipant.getSquad();
+            if (squadParticipant.getStatus() == SquadParticipationStatus.JOINED) {
+                squad.decreaseCurrentCount();
+            }
+            squadRepository.save(squad);
+            squadParticipantRepository.delete(squadParticipant);
+        }
+    }
+
+    @Transactional
+    private void deleteSquadsByUser(User user) {
+        List<Squad> squads = squadRepository.findAllByUser(user);
+        for (Squad squad : squads) {
+            deleteSquad(user, squad.getPid(), true);
+        }
+    }
+
+    @Transactional
+    public void deleteByUser(User user) {
+        deleteFromParticipatedByUser(user);
+        deleteSquadsByUser(user);
     }
 
     private List<User> getExcludedUsers(User currentUser) {
