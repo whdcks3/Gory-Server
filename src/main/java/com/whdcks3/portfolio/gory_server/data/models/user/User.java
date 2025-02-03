@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -21,6 +23,7 @@ import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
+import com.whdcks3.portfolio.gory_server.enums.AlarmType;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
 import com.whdcks3.portfolio.gory_server.enums.Role;
 
@@ -72,7 +75,7 @@ public class User extends BaseEntity {
     private LocalDate birth;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private Boolean receiveEvent, feedAlarm, feedLikeAlarm, squadChatAlarm, ChatroomAlarm;
+    private Boolean receiveEvent, feedAlarm, feedLikeAlarm, squadChatAlarm, chatroomAlarm;
 
     @Column(nullable = true, columnDefinition = "INT DEFAULT 0")
     private int reportCount;
@@ -121,7 +124,7 @@ public class User extends BaseEntity {
         this.name = req.getName();
         this.birth = LocalDate.parse(req.getBirth().toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         this.gender = req.getGender();
-        this.receiveEvent = req.getReceiveEvent().equals("true");
+        // this.receiveEvent = req.getReceiveEvent().equals("true");
         this.nickname = "";
         this.lockType = LockType.EMAIL_AUTH;
         this.role = Role.USER;
@@ -145,9 +148,9 @@ public class User extends BaseEntity {
         // new File(imageUrl).delete();
     }
 
-    public void setAlarm() {
-        feedAlarm = !feedAlarm;
-    }
+    // public void setAlarm() {
+    // feedAlarm = !feedAlarm;
+    // }
 
     public void increaseReportCount() {
         this.reportCount++;
@@ -176,6 +179,27 @@ public class User extends BaseEntity {
 
     public List<SimpleGrantedAuthority> getAhorities() {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
+    }
+
+    public void updateAlarmSetting(AlarmType alarmType, boolean enabled) {
+        switch (alarmType) {
+            case RECEIVE_EVENT:
+                this.receiveEvent = enabled;
+                break;
+            case FEED_ALARM:
+                this.feedLikeAlarm = enabled;
+                break;
+            case FEED_LIKE_ALARM:
+                this.feedLikeAlarm = enabled;
+                break;
+            case SQUAD_CHAT_ALARM:
+                this.squadChatAlarm = enabled;
+                break;
+            case CHATROOM_ALARM:
+                this.chatroomAlarm = enabled;
+            default:
+                throw new IllegalArgumentException("존재하지 않는 알람입니다.");
+        }
     }
 
 }

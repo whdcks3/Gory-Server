@@ -10,7 +10,9 @@ import com.google.api.pathtemplate.ValidationException;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.data.requests.UserAlarmRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
+import com.whdcks3.portfolio.gory_server.enums.AlarmType;
 import com.whdcks3.portfolio.gory_server.exception.NicknameDuplicatedException;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 
@@ -158,6 +160,10 @@ public class UserService {
         chatroomService.deleteByUser(user);
 
         userRepository.delete(user);
+    }
+
+    public void alarmSet(User user, UserAlarmRequest req) {
+        user.updateAlarmSetting(req.getAlarmType(), req.getAlarmEnabled());
     }
 
 }

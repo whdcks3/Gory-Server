@@ -23,6 +23,7 @@ import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.Squa
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SquadRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.DataResponse;
+import com.whdcks3.portfolio.gory_server.enums.AlarmType;
 import com.whdcks3.portfolio.gory_server.enums.Gender;
 import com.whdcks3.portfolio.gory_server.enums.JoinType;
 import com.whdcks3.portfolio.gory_server.exception.MemberNotEqualsException;
@@ -163,7 +164,7 @@ public class SquadService {
         squad.getParticipants().add(squadParticipant);
 
         String fcmToken = squad.getUser().getFcmToken();
-        boolean isAlarm = squad.getUser().getFeedLikeAlarm();
+        boolean isAlarm = squad.getUser().getFeedAlarm();
         String title = "모임에 새로운 멤버가 참여했습니다.";
         String content = String.format("회원님의 모임글 [%s]에 새로운 멤버가 참여했습니다.",
                 squad.getTitle().substring(0, Math.max(20, squad.getTitle().length())));
