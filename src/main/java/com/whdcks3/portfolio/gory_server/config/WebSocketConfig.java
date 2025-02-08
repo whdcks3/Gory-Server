@@ -3,6 +3,7 @@ package com.whdcks3.portfolio.gory_server.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
+
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
@@ -19,7 +20,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 
-        // /api/squadChat으로 요청이 들어오면 websocket 통신을 진행한다.
-        registry.addHandler(webSocketHandler, "/api/squadChat").setAllowedOrigins("*");
+        // 요청이 들어오면 websocket 통신을 진행한다.
+        registry.addHandler(webSocketHandler, "/ws") // 웹 소켓 서버 endpoint
+                .setAllowedOriginPatterns("*"); // CORS 허용 설정
     }
 }

@@ -164,6 +164,6 @@ public class UserService {
 
     public void alarmSet(User user, UserAlarmRequest req) {
         user.updateAlarmSetting(req.getAlarmType(), req.getAlarmEnabled());
-    }
+    } // or 한번에 끄기
 
 }
