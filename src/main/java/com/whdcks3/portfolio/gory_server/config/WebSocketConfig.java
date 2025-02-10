@@ -14,14 +14,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    // WebSocketHandler에 관한 생성자 추가
     private final WebSocketHandler webSocketHandler;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 
-        // 요청이 들어오면 websocket 통신을 진행한다.
-        registry.addHandler(webSocketHandler, "/ws") // 웹 소켓 서버 endpoint
-                .setAllowedOriginPatterns("*"); // CORS 허용 설정
+        registry.addHandler(webSocketHandler, "/ws")
+                .setAllowedOriginPatterns("*");
     }
 }

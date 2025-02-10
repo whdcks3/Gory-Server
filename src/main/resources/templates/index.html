@@ -29,7 +29,7 @@
 
 <body>
 
-    <h2>📢 WebSocket 채팅 테스트</h2>
+    <h2> WebSocket 채팅 테스트</h2>
     <div id="chat"></div>
     <input type="text" id="message" placeholder="메시지 입력..." />
     <button onclick="sendMessage()">전송</button>
@@ -50,6 +50,7 @@
             chatBox.innerHTML += `<p>${event.data}</p>`;
             chatBox.scrollTop = chatBox.scrollHeight; // 스크롤 자동 내리기
         };
+
 
         // 연결 종료 시
         socket.onclose = () => {

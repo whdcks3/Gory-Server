@@ -33,4 +33,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Boolean existsByPidNotAndNickname(Long pid, String nickname);
 
     Boolean existsByNickname(String nickname);
+
+    Optional<User> findByNickname(String nickname);
+
 }
