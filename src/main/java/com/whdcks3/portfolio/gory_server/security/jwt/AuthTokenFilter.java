@@ -45,7 +45,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 User user = userRepository.findByEmail(username)
                         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-                var authencation = new UsernamePasswordAuthenticationToken(user, null, user.getAhorities());
+                var authencation = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authencation);
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

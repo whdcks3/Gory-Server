@@ -52,7 +52,9 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public static CustomUserDetails build(User user) {
-        List<SimpleGrantedAuthority> authorities = user.getAhorities();
+        // List<SimpleGrantedAuthority> authorities = user.getAuthorities();
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
+        List<SimpleGrantedAuthority> authorities = List.of(authority);
 
         return new CustomUserDetails(
                 user.getPid(),

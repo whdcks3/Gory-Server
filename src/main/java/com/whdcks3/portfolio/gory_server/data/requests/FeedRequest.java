@@ -19,6 +19,7 @@ public class FeedRequest {
 
     @NotBlank
     private String category;
+
     private List<MultipartFile> addedImages = new ArrayList<>();// []
 
     private List<String> deletedImages = new ArrayList<>();

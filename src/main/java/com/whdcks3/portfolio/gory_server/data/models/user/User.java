@@ -178,7 +178,7 @@ public class User extends BaseEntity {
         return new org.springframework.security.core.userdetails.User(this.getEmail(), this.getPassword(), authories);
     }
 
-    public List<SimpleGrantedAuthority> getAhorities() {
+    public List<SimpleGrantedAuthority> getAuthorities() {
         System.out.println("ROLE: " + this.role.name());
         return Collections.singletonList(new SimpleGrantedAuthority(this.role.name()));
     }
