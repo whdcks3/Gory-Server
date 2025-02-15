@@ -38,8 +38,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 }
-
                 Claims claims = jwtUtils.validateJwtToken(token);
+
                 String username = claims.getSubject();
 
                 User user = userRepository.findByEmail(username)

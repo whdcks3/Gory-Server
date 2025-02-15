@@ -37,7 +37,7 @@ public class SignupRequest {
 
     private String gender;
 
-    @Past(message = "생년월일은 과거 날짜여야 합니다.")
+    @Past(message = "생년월일은 과거 날짜여야 합니다.(xxxx-xx-xx)")
     private LocalDate birth;
 
     private String receiveEvent;

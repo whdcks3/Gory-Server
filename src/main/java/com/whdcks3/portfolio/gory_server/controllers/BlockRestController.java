@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/block")
-public class BlockController {
+public class BlockRestController {
 
     private final BlockService blockService;
 

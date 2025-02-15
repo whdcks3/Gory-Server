@@ -9,7 +9,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.whdcks3.portfolio.gory_server.enums.ERole;
+import com.whdcks3.portfolio.gory_server.enums.Role;
 import com.whdcks3.portfolio.gory_server.security.service.CustomUserDetails;
 
 public class Utils {
@@ -30,15 +30,15 @@ public class Utils {
         return authentication.isAuthenticated();
     }
 
-    static public ERole getRole() {
+    static public Role getRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || AnonymousAuthenticationToken.class.isAssignableFrom(authentication.getClass())) {
-            return ERole.ROLE_USER;
+            return Role.USER;
         }
         Set<String> roles = authentication.getAuthorities().stream()
                 .map(r -> r.getAuthority()).collect(Collectors.toSet());
         String role = roles.iterator().next();
-        return ERole.ROLE_USER.name().equals(role) ? ERole.ROLE_USER : ERole.ROLE_ADMIN;
+        return Role.USER.name().equals(role) ? Role.USER : Role.ADMIN;
     }
 
     static public String getNickname() {

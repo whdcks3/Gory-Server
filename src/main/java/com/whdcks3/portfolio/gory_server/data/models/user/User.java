@@ -173,12 +173,14 @@ public class User extends BaseEntity {
     }
 
     public UserDetails touserDetails() {
-        List<GrantedAuthority> authories = List.of(new SimpleGrantedAuthority("ROLE_" + this.getRole().name()));
+        System.out.println("ROLE: " + this.role.name());
+        List<GrantedAuthority> authories = List.of(new SimpleGrantedAuthority(this.getRole().name()));
         return new org.springframework.security.core.userdetails.User(this.getEmail(), this.getPassword(), authories);
     }
 
     public List<SimpleGrantedAuthority> getAhorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
+        System.out.println("ROLE: " + this.role.name());
+        return Collections.singletonList(new SimpleGrantedAuthority(this.role.name()));
     }
 
     public void updateAlarmSetting(AlarmType alarmType, boolean enabled) {

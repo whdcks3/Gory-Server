@@ -30,7 +30,7 @@ public class Report {
 
     @CreationTimestamp
     @Column(nullable = false, name = "reportcreated_at", updatable = false)
-    @ColumnDefault("report_timestamp")
+    @ColumnDefault("CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
 }

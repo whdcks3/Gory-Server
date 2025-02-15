@@ -84,7 +84,7 @@ public class JwtUtils {
 
         if (!Files.exists(privateKeyPath) || !Files.exists(publicKeyPath)) {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2024);
+            keyPairGenerator.initialize(2048);
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             Files.createDirectories(privateKeyPath.getParent());

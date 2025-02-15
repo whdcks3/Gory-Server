@@ -37,7 +37,7 @@ public class SquadChat extends BaseEntity {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "suqad_pid")
+    @JoinColumn(name = "squad_pid")
     private Squad squad;
 
     @Size(max = 1000)

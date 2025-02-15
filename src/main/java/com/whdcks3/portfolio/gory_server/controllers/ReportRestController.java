@@ -14,7 +14,7 @@ import com.whdcks3.portfolio.gory_server.service.ReportService;
 
 @RestController
 @RequestMapping("/api/report")
-public class ReportController {
+public class ReportRestController {
 
     @Autowired
     ReportService reportService;

@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @RestController
 @RequestMapping("/api/feed")
-public class FeedController {
+public class FeedRestController {
 
     @Autowired
     FeedService feedService;

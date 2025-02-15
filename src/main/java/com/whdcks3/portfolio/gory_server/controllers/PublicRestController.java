@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.ErrorResponse;
+import com.whdcks3.portfolio.gory_server.enums.Role;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
@@ -56,12 +58,25 @@ public class PublicRestController {
     @Autowired
     JwtUtils jwtUtills;
 
+    @Operation(summary = "회원가입", description = "사용자 회원가입 API")
+    @RequestMapping(value = "/signup", method = RequestMethod.POST)
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
+        System.out.println("signup controller");
+        System.out.println(req);
+        if (!authService.signUp(req)) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(91, "회원 가입에 오류가 발생했습니다"));
+            // return ResponseEntity.badRequest().body("회원 가입에 오류가 발생했습니다");
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/signin")
     public ResponseEntity<Map<String, String>> authenticateUser(@Valid @RequestParam String email,
             @Valid @RequestParam String snsType, @Valid @RequestParam String snsId) {
         return ResponseEntity.ok(authService.authenticate(email, snsType, snsId));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/repassword")
     public ResponseEntity<?> rePassword(@RequestParam String email, @RequestParam String rawPassword) {
         authService.resetPassword(email, rawPassword);
@@ -73,18 +88,6 @@ public class PublicRestController {
         // e.getMessage()));
         // }
         // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
-    }
-
-    @Operation(summary = "회원가입", description = "사용자 회원가입 API")
-    @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
-        System.out.println("signup controller");
-        System.out.println(req);
-        if (!authService.signUp(req)) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(91, "회원 가입에 오류가 발생했습니다"));
-            // return ResponseEntity.badRequest().body("회원 가입에 오류가 발생했습니다");
-        }
-        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")

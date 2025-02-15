@@ -16,6 +16,7 @@ import com.whdcks3.portfolio.gory_server.data.models.user.EmailVerification;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.enums.LockType;
+import com.whdcks3.portfolio.gory_server.enums.Role;
 import com.whdcks3.portfolio.gory_server.exception.ValidationException;
 import com.whdcks3.portfolio.gory_server.repositories.EmailVerificationRepository;
 import com.whdcks3.portfolio.gory_server.repositories.RandomCodeRepository;
@@ -72,6 +73,7 @@ public class AuthService {
         if (user == null || !passwordEncoder.matches(snsType + snsId, user.getPassword())) {
             throw new IllegalArgumentException("잘못된 소셜 계정입니다.");
         }
+        System.out.println("여기까지 인증 됨");
         return getTokensByUser(user);
     }
 

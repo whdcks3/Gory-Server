@@ -24,7 +24,7 @@ public class ReportSquad extends Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "squad_pid", nullable = false)
-    private Squad suqad;
+    private Squad squad;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_pid", nullable = false)
@@ -36,7 +36,7 @@ public class ReportSquad extends Report {
     private String cotent;
 
     public ReportSquad(Squad squad, User reporter, String category, String cotent) {
-        this.suqad = squad;
+        this.squad = squad;
         this.reporter = reporter;
         this.category = category;
         this.cotent = cotent;

@@ -25,7 +25,7 @@ import com.whdcks3.portfolio.gory_server.service.SquadService;
 
 @RestController
 @RequestMapping("/api/squad")
-public class SquadController {
+public class SquadRestController {
 
     @Autowired
     SquadService squadService;
