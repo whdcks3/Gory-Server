@@ -76,7 +76,6 @@ public class PublicRestController {
         return ResponseEntity.ok(authService.authenticate(email, snsType, snsId));
     }
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping("/repassword")
     public ResponseEntity<?> rePassword(@RequestParam String email, @RequestParam String rawPassword) {
         authService.resetPassword(email, rawPassword);
@@ -125,6 +124,7 @@ public class PublicRestController {
     }
 
     // 회원 토큰으로 인한 활성화
+    // 테스트 필요
     @GetMapping("/activate")
     public ResponseEntity<?> activateUser(@RequestParam String token) {
         return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.")
