@@ -19,35 +19,36 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SquadChatService {
-    private final SquadChatRepository squadChatRepository;
-    private final SquadRepository squadRepository;
+        private final SquadChatRepository squadChatRepository;
+        private final SquadRepository squadRepository;
 
-    @Transactional
-    public void saveMessage(User user, SquadChatDto chatDto) {
-        Squad squad = squadRepository.findById(chatDto.getSquadId())
-                .orElseThrow(() -> new IllegalArgumentException());
+        @Transactional
+        public void saveMessage(User user, SquadChatDto chatDto) {
+                Squad squad = squadRepository.findById(chatDto.getSquadId())
+                                .orElseThrow(() -> new IllegalArgumentException());
 
-        List<SquadChatImage> images = chatDto.getImages().stream()
-                .map(name -> new SquadChatImage(name)).collect(Collectors.toList());
+                List<SquadChatImage> images = chatDto.getImages().stream()
+                                .map(name -> new SquadChatImage(name)).collect(Collectors.toList());
 
-        SquadChat chatMessage = SquadChat.builder()
-                .user(user)
-                .squad(squad)
-                .message(chatDto.getMessage())
-                .type(chatDto.getType())
-                .images(images)
-                .imageCount(images.size())
-                .build();
-        images.forEach(image -> image.initSquadChat(chatMessage));
+                SquadChat chatMessage = SquadChat.builder()
+                                .user(user)
+                                .squad(squad)
+                                .message(chatDto.getMessage())
+                                .type(chatDto.getType())
+                                .images(images)
+                                .imageCount(images.size())
+                                .build();
+                images.forEach(image -> image.initSquadChat(chatMessage));
 
-        squadChatRepository.save(chatMessage);
-    }
+                squadChatRepository.save(chatMessage);
+        }
 
-    // public List<SquadChatDto> getMessageBySquad(User user, Long squadId) {
-    // List<SquadChat> messages =
-    // squadChatRepository.findBySquadChatIdOrderByCreatedAtAsc(squadId);
+        // public List<SquadChatDto> getMessageBySquad(User user, Long squadId) {
+        // List<SquadChat> messages =
+        // squadChatRepository.findBySquadChatIdOrderByCreatedAtAsc(squadId);
 
-    // return messages.stream().map(msg -> SquadChatDto.toDto(msg,
-    // user)).collect(Collectors.toList());
-    // }
+        // return messages.stream().map(msg -> SquadChatDto.toDto(msg,
+        // user)).collect(Collectors.toList());
+        // }
+        // te
 }
