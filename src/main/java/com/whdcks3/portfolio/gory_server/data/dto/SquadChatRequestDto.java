@@ -13,10 +13,9 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class SquadChatDto {
+public class SquadChatRequestDto {
 
     // private MessageType type;
-    private int type;
     private Long squadId;
     private Long squadChatId;
     private Long sender;
@@ -24,14 +23,7 @@ public class SquadChatDto {
     private List<String> images;
     private LocalDateTime time;
 
-    public static SquadChatDto toDto(SquadChat squadChat, User user) {
-        // MessageType type;
-        // if (squadChat.getType() == MessageType.ENTER) {
-        // type = MessageType.ENTER;
-        // } else {
-        // type = MessageType.TALK;
-        // }
-        int type = squadChat.getType();
+    public static SquadChatRequestDto toDto(SquadChat squadChat, User user) {
         Long squadId = squadChat.getSquad().getPid();
         Long squadChatId = squadChat.getPid();
         Long sender = user.getPid();
@@ -40,7 +32,7 @@ public class SquadChatDto {
                 .collect(Collectors.toList());
         LocalDateTime time = LocalDateTime.now();
 
-        return new SquadChatDto(type, squadId, squadChatId, sender, message, images, time);
+        return new SquadChatRequestDto(squadId, squadChatId, sender, message, images, time);
     }
 
     // 입장 메시지, 채팅

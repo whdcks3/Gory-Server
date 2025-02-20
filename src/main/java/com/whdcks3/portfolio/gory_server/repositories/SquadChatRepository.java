@@ -9,5 +9,5 @@ import com.whdcks3.portfolio.gory_server.data.models.squad.SquadChat;
 
 @Repository
 public interface SquadChatRepository extends JpaRepository<SquadChat, Long> {
-        // List<SquadChat> findBySquadChatIdOrderByCreatedAtAsc(Long squadChatId);
+        List<SquadChat> findBySquadPidOrderByCreatedAtAsc(Long squadPid);
 }

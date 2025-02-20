@@ -74,7 +74,7 @@ public class FeedRestController {
     // 피드 삭제
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> deleteFeed(@AuthenticationPrincipal User user, @PathVariable Long fid) {
+    public ResponseEntity<?> deleteFeed(@AuthenticationPrincipal User user, @PathVariable("id") Long fid) {
         feedService.deleteFeed(user, fid);
         return ResponseEntity.ok().build();
         // try {
@@ -89,7 +89,7 @@ public class FeedRestController {
     @GetMapping("/like/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> likeFeed(@AuthenticationPrincipal User user, @PathVariable Long id) {
-        feedService.processFeedLike(Utils.getPid(), id);
+        feedService.processFeedLike(user.getPid(), id);
         return ResponseEntity.ok().build();
         // try {
         // feedService.processFeedLike(Utils.getPid(), id);
@@ -103,9 +103,9 @@ public class FeedRestController {
     @Operation(summary = "나의 피드", security = @SecurityRequirement(name = "bearerAuth"))
     @RequestMapping(value = "/mine", method = RequestMethod.GET)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> mine(Authentication authentication,
+    public ResponseEntity<?> mine(@AuthenticationPrincipal User user,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
-        feedService.myFeeds(Utils.getPid(), pageable);
+        feedService.myFeeds(user.getPid(), pageable);
         return ResponseEntity.ok().build();
         // try {
         // feedService.myFeeds(Utils.getPid(), pageable);
@@ -125,20 +125,20 @@ public class FeedRestController {
     // return ResponseEntity.ok().body(feedService.feeds(user, page, category));
     // }
 
+    // 재테스트 필요
     @RequestMapping(value = "/home", method = RequestMethod.GET)
-    public ResponseEntity<?> home(
+    public ResponseEntity<?> home(@AuthenticationPrincipal User user,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable,
-            @RequestParam(value = "category", defaultValue = "전체") String category,
-            @AuthenticationPrincipal User user) {
+            @RequestParam(defaultValue = "전체") String category) {
         System.out.println("user: " + (user != null));
         return ResponseEntity.ok().body(feedService.homeFeed(user, pageable, category));
     }
 
+    // 재테스트 필요
     @PostMapping("/others/{id}")
-    public ResponseEntity<?> other(Authentication authentication, @PathVariable Long id,
+    public ResponseEntity<?> other(@AuthenticationPrincipal User user, @PathVariable Long id,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
-
-        feedService.othersFeed(Utils.getPid(), id, pageable);
+        feedService.othersFeed(user.getPid(), id, pageable);
         return ResponseEntity.ok().build();
         // try {
         // feedService.othersFeed(Utils.getPid(), id, pageable);
@@ -149,6 +149,7 @@ public class FeedRestController {
         // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
+    // 재테스트필요
     @DeleteMapping("deletecomment/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {

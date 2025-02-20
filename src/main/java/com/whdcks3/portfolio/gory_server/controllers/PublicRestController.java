@@ -124,7 +124,7 @@ public class PublicRestController {
     }
 
     // 회원 토큰으로 인한 활성화
-    // 테스트 필요
+    // 재테스트 필요
     @GetMapping("/activate")
     public ResponseEntity<?> activateUser(@RequestParam String token) {
         return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.")

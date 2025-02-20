@@ -54,6 +54,7 @@ public class SquadChat extends BaseEntity {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean deletable;
 
+    // images only
     @Builder
     public SquadChat(User user, Squad squad, int count, List<SquadChatImage> images) {
         this.user = user;
@@ -66,6 +67,7 @@ public class SquadChat extends BaseEntity {
         addImages(images);
     }
 
+    // text only
     @Builder
     public SquadChat(User user, Squad squad, String message) {
         this.user = user;
@@ -75,6 +77,7 @@ public class SquadChat extends BaseEntity {
         this.deletable = true;
     }
 
+    // system message
     @Builder
     public SquadChat(Squad squad, String message) {
         this.user = null;
@@ -84,6 +87,7 @@ public class SquadChat extends BaseEntity {
         this.deletable = false;
     }
 
+    // date changes
     @Builder
     public SquadChat(Squad squad) {
         String[] days = { "월", "화", "수", "목", "금", "토", "일" };

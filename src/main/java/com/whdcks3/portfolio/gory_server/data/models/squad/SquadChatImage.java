@@ -36,8 +36,11 @@ public class SquadChatImage {
     @Column(nullable = false)
     private String uniqueName;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String originName;
+
+    @Column(nullable = true)
+    private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_pid", nullable = false)
@@ -56,6 +59,11 @@ public class SquadChatImage {
     public SquadChatImage(String originName) {
         this.originName = originName;
         this.uniqueName = generateUniqueName(extractExtension(originName));
+    }
+
+    public SquadChatImage(String filename, String url) {
+        this.uniqueName = filename;
+        this.url = url;
     }
 
     public void initSquadChat(SquadChat squadChat) {

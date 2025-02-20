@@ -180,7 +180,7 @@ public class User extends BaseEntity {
 
     public List<SimpleGrantedAuthority> getAuthorities() {
         System.out.println("ROLE: " + this.role.name());
-        return Collections.singletonList(new SimpleGrantedAuthority(this.role.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     public void updateAlarmSetting(AlarmType alarmType, boolean enabled) {

@@ -57,21 +57,24 @@ public class FeedService {
         return FeedSimpleDto.toDto(feed, false);
     }
 
+    @Transactional
     public FeedSimpleDto updateFeed(FeedRequest req, User user, Long feedId) {
         Feed feed = feedRepository.findById(feedId).orElseThrow(null);
         validateUser(user, feed);
+
         if (req.getDeletedImages() != null) {
             deleteImages(req.getDeletedImages());
         }
         if (req.getAddedImages() != null) {
             saveFeedImages(feed, req.getAddedImages());
         }
+        feed.update(req);
         return FeedSimpleDto.toDto(feed, hasFeedLike(user, feed));
     }
 
     @Transactional
     public void deleteFeed(User user, Long feedId) {
-        Feed feed = feedRepository.findById(feedId).orElseThrow(null);
+        Feed feed = feedRepository.findById(feedId).orElseThrow(() -> new RuntimeException("Feed not found"));
         validateUser(user, feed);
         List<FeedImage> images = feedImageRepository.findByFeed(feed);
         images.forEach(image -> {
