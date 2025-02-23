@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.whdcks3.portfolio.gory_server.common.Utils;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
+import com.whdcks3.portfolio.gory_server.data.requests.FeedCommentRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.FeedRequest;
 import com.whdcks3.portfolio.gory_server.service.BlockService;
 import com.whdcks3.portfolio.gory_server.service.FeedService;
@@ -125,8 +126,8 @@ public class FeedRestController {
     // return ResponseEntity.ok().body(feedService.feeds(user, page, category));
     // }
 
-    // 재테스트 필요
     @RequestMapping(value = "/home", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> home(@AuthenticationPrincipal User user,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable,
             @RequestParam(defaultValue = "전체") String category) {
@@ -134,8 +135,8 @@ public class FeedRestController {
         return ResponseEntity.ok().body(feedService.homeFeed(user, pageable, category));
     }
 
-    // 재테스트 필요
     @PostMapping("/others/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> other(@AuthenticationPrincipal User user, @PathVariable Long id,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC, size = 10) Pageable pageable) {
         feedService.othersFeed(user.getPid(), id, pageable);
@@ -149,8 +150,15 @@ public class FeedRestController {
         // return ResponseEntity.ok().body(new CommonResponse(100, "성공"));
     }
 
-    // 재테스트필요
-    @DeleteMapping("deletecomment/{id}")
+    @PostMapping("/createcomment")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> createComment(@AuthenticationPrincipal User user, @ModelAttribute FeedCommentRequest req) {
+        feedService.writeComment(user.getPid(), req);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/deletecomment/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> deleteComment(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
         feedService.deleteComment(id, userId);

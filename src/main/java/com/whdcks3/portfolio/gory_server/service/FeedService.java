@@ -167,7 +167,9 @@ public class FeedService {
     public Long writeComment(Long uid, FeedCommentRequest req) {
         User user = userRepository.findById(uid).get();
         Feed feed = feedRepository.findById(req.getFeedPid()).get();
-        FeedComment parentComment = feedCommentRepository.findById(req.getFeedCommentPid()).orElse(null);
+        FeedComment parentComment = (req.getFeedCommentPid() != null)
+                ? feedCommentRepository.findById(req.getFeedCommentPid()).orElse(null)
+                : null;
         FeedComment comment = feedCommentRepository
                 .save(new FeedComment(user, feed, req.getContent(), parentComment));
         feed.increaseCommentCount();
