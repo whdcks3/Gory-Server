@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,7 +21,6 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.google.auto.value.AutoValue.Builder;
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant.SquadParticipationStatus;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
@@ -28,6 +28,7 @@ import com.whdcks3.portfolio.gory_server.data.requests.SquadRequest;
 import com.whdcks3.portfolio.gory_server.enums.Gender;
 import com.whdcks3.portfolio.gory_server.enums.JoinType;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -49,8 +50,8 @@ public class Squad extends BaseEntity {
     private String title, category, regionMain, regionSub, description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Gender genderRequirement;
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ALL'")
+    private Gender genderRequirement = Gender.ALL;
 
     @Column(nullable = false)
     private boolean timeSpecified;
@@ -65,7 +66,7 @@ public class Squad extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private JoinType joinType;
+    private JoinType joinType = JoinType.APPROVAL;
 
     @Size(max = 1000)
     private String notice;
@@ -82,7 +83,7 @@ public class Squad extends BaseEntity {
     @Column(nullable = false)
     private boolean closed = false;
 
-    @lombok.Builder
+    @Builder
     public Squad(User user, SquadRequest req) {
         this.user = user;
         this.category = req.getCategory();
@@ -90,8 +91,8 @@ public class Squad extends BaseEntity {
         this.description = req.getDescription();
         this.regionMain = req.getRegionMain();
         this.regionSub = req.getRegionSub();
-        this.timeSpecified = req.getTimeSpecified();
-        if (req.getTimeSpecified().booleanValue()) {
+        this.timeSpecified = Optional.ofNullable(req.getTimeSpecified()).orElse(false);
+        if (Boolean.TRUE.equals(req.getTimeSpecified())) {
             this.time = req.getTime();
         }
         this.genderRequirement = req.getGenderRequirement();
@@ -109,10 +110,14 @@ public class Squad extends BaseEntity {
         this.description = req.getDescription();
         this.regionMain = req.getRegionMain();
         this.regionSub = req.getRegionSub();
-        this.timeSpecified = req.getTimeSpecified();
-        if (req.getTimeSpecified().booleanValue()) {
+        this.timeSpecified = Optional.ofNullable(req.getTimeSpecified()).orElse(false);
+        if (Boolean.TRUE.equals(req.getTimeSpecified())) {
             this.time = req.getTime();
         }
+        // this.timeSpecified = req.getTimeSpecified();
+        // if (req.getTimeSpecified().booleanValue()) {
+        // this.time = req.getTime();
+        // }
         this.genderRequirement = req.getGenderRequirement();
         this.joinType = req.getJoinType();
         this.maxParticipants = req.getMaxParticipants();
