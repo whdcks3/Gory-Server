@@ -14,7 +14,9 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.DynamicInsert;
@@ -51,7 +53,7 @@ public class Squad extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ALL'")
-    private Gender genderRequirement = Gender.ALL;
+    private Gender genderRequirement;
 
     @Column(nullable = false)
     private boolean timeSpecified;
@@ -65,8 +67,8 @@ public class Squad extends BaseEntity {
     private LocalTime time;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private JoinType joinType = JoinType.APPROVAL;
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'APPROVAL'")
+    private JoinType joinType;
 
     @Size(max = 1000)
     private String notice;
@@ -96,7 +98,7 @@ public class Squad extends BaseEntity {
             this.time = req.getTime();
         }
         this.genderRequirement = req.getGenderRequirement();
-        this.joinType = req.getJoinType();
+        this.joinType = Optional.ofNullable(req.getJoinType()).orElse(JoinType.APPROVAL);
         this.maxParticipants = req.getMaxParticipants();
         this.minAge = req.getMinAge();
         this.maxAge = req.getMaxAge();
@@ -119,12 +121,19 @@ public class Squad extends BaseEntity {
         // this.time = req.getTime();
         // }
         this.genderRequirement = req.getGenderRequirement();
-        this.joinType = req.getJoinType();
+        this.joinType = Optional.ofNullable(req.getJoinType()).orElse(JoinType.APPROVAL);
         this.maxParticipants = req.getMaxParticipants();
         this.minAge = req.getMinAge();
         this.maxAge = req.getMaxAge();
         this.date = req.getDate();
         this.currentCount = 1;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.genderRequirement == null) {
+            this.genderRequirement = Gender.ALL;
+        }
     }
 
     public boolean isJoining(User user) {

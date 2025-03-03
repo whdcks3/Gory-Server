@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -99,5 +100,20 @@ public class FirebasePublisherUtil {
         public void deleteSubscription(String topic, String registrationToken)
                         throws FirebaseMessagingException {
                 fcm.unsubscribeFromTopic(Arrays.asList(registrationToken), topic);
+        }
+
+        // for TESTING only
+        public void sendPushNotification(PushRequest req)
+                        throws ExecutionException, InterruptedException {
+                Message message = Message.builder()
+                                .setToken(req.getFcmToken())
+                                .setNotification(Notification.builder()
+                                                .setTitle(req.getTitle())
+                                                .setBody(req.getBody() + "|" + req.getLink())
+                                                .build())
+                                .build();
+
+                String response = FirebaseMessaging.getInstance().sendAsync(message).get();
+                System.out.println("FCM Push Response: " + response);
         }
 }

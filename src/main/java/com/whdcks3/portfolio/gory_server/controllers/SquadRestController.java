@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,7 +33,7 @@ public class SquadRestController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createSquad(@AuthenticationPrincipal User user, @ModelAttribute SquadRequest req) {
+    public ResponseEntity<?> createSquad(@AuthenticationPrincipal User user, @RequestBody SquadRequest req) {
         squadService.createSquad(user, req);
         return ResponseEntity.ok().build();
     }
@@ -40,14 +41,14 @@ public class SquadRestController {
     @PutMapping("/modify/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> modifySquad(@RequestParam Long id, @PathVariable Long sid,
-            @ModelAttribute SquadRequest req) {
+            @RequestBody SquadRequest req) {
         squadService.modifySquad(id, sid, req);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> deleteSquad(@AuthenticationPrincipal User user, @PathVariable Long sid,
+    public ResponseEntity<?> deleteSquad(@AuthenticationPrincipal User user, @PathVariable("id") Long sid,
             @RequestParam(defaultValue = "false") boolean isForcedDelete) {
         squadService.deleteSquad(user, sid, isForcedDelete);
         return ResponseEntity.ok().build();
