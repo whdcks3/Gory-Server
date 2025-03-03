@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>홈피드</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .feed-container {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .feed-item {
+            background: #f9f9f9;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .feed-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .feed-image {
+            width: 100px;
+            height: 100px;
+            margin-top: 10px;
+        }
+
+        .like-btn {
+            background: none;
+            border: none;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>홈 피드</h1>
+
+    <label id="category">카테고리</label>
+    <select id="category">
+        <option value="전체">전체</option>
+        <option value="건강/운동">건강/운동</option>
+        <option value="맛집/카페">맛집/카페</option>
+        <option value="독서/영화">독서/영화</option>
+    </select>
+    <button onclick="loadFeeds(0)">피드 불러오기</button>
+    <div id="loading" class="hidden">로딩 중...</div>
+
+    <ul class="feed-container" id="feedContainer"></ul>
+
+    <button id="loadMoreBtn" style="display: none;" onclick="loadMoreFeeds()">더 보기</button>
+
+    <script src="homefeed.js"></script>
+</body>
+
+</html>

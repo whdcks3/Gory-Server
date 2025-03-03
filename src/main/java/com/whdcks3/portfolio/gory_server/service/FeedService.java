@@ -106,10 +106,13 @@ public class FeedService {
         } else {
             feeds = feedRepository.findByCategoryAndUserNotIn(category, excludedUsers, pageable);
         }
+        System.out.println("count: " + feeds.getSize());
         boolean hasNext = feeds.hasNext();
+        System.out.println("feed content size: " + feeds.getContent().size());
         // boolean hasNext = ((long) Math.ceil((double) feeds.size() / 20)) > page + 1;
         List<FeedSimpleDto> feedDtos = feeds.getContent().stream()
                 .map(f -> FeedSimpleDto.toDto(f, hasFeedLike(user, f))).toList();
+        System.out.println("count2: " + feedDtos.size());
         return new DataResponse(hasNext, feedDtos);
     }
 

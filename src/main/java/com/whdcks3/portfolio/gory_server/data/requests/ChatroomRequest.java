@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ChatroomRequest {
-    @AllowedCategories(values = { "전체", "건강/운동", "맛집/카페" })
+    @AllowedCategories(values = { "전체", "건강/운동", "맛집/카페", "독서/영화" })
     private String category;
     private String title;
     private String content;
