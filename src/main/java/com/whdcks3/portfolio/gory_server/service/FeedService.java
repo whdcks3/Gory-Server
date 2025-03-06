@@ -101,10 +101,15 @@ public class FeedService {
             excludedUsers = getExcludedUsers(user);
         }
         Page<Feed> feeds;
-        if (category.equals("전체")) {
-            feeds = feedRepository.findByUserNotIn(excludedUsers, pageable);
+        System.out.println("excludedUsers size: " + excludedUsers.size());
+        if (!excludedUsers.isEmpty()) {
+            feeds = category.equals("전체")
+                    ? feedRepository.findByUserNotIn(excludedUsers, pageable)
+                    : feedRepository.findByCategoryAndUserNotIn(category, excludedUsers, pageable);
         } else {
-            feeds = feedRepository.findByCategoryAndUserNotIn(category, excludedUsers, pageable);
+            feeds = category.equals("전체")
+                    ? feedRepository.findAll(pageable)
+                    : feedRepository.findAllByCategory(category, pageable);
         }
         System.out.println("count: " + feeds.getSize());
         boolean hasNext = feeds.hasNext();
