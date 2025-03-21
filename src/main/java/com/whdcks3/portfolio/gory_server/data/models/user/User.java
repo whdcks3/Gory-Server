@@ -20,6 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.whdcks3.portfolio.gory_server.common.BaseEntity;
+import com.whdcks3.portfolio.gory_server.common.Utils;
 import com.whdcks3.portfolio.gory_server.data.models.squad.SquadParticipant;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.requests.UserModifyRequest;
@@ -75,7 +76,7 @@ public class User extends BaseEntity {
     private LocalDate birth;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private Boolean receiveEvent, feedAlarm, feedLikeAlarm, squadChatAlarm, chatroomAlarm;
+    private Boolean receiveEvent, feedAlarm, feedLikeAlarm, squadChatAlarm, chatroomAlarm, squadNotifyAlarm;
 
     @Column(nullable = true, columnDefinition = "INT DEFAULT 0")
     private int reportCount;
@@ -204,4 +205,11 @@ public class User extends BaseEntity {
         }
     }
 
+    public int getAge() {
+        return Utils.calculateAge(birth);
+    }
+
+    public boolean isFcmAbled() {
+        return squadNotifyAlarm && fcmToken != null;
+    }
 }

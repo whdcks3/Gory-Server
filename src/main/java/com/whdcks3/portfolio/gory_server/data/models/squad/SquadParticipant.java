@@ -44,11 +44,15 @@ public class SquadParticipant {
     @Column(nullable = false)
     private SquadParticipationStatus status;
 
-    public SquadParticipant(User user, Squad squad) {
+    private SquadParticipant(User user, Squad squad) {
         this.user = user;
         this.squad = squad;
         this.status = squad.getJoinType().equals(JoinType.DIRECT) ? SquadParticipationStatus.JOINED
                 : SquadParticipationStatus.PENDING;
+    }
+
+    public static SquadParticipant create(User user, Squad squad) {
+        return new SquadParticipant(user, squad);
     }
 
     public enum SquadParticipationStatus {

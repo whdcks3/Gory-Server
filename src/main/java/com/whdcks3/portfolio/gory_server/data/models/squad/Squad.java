@@ -1,6 +1,7 @@
 package com.whdcks3.portfolio.gory_server.data.models.squad;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,8 +86,11 @@ public class Squad extends BaseEntity {
     @Column(nullable = false)
     private boolean closed = false;
 
+    @Column
+    private boolean notifySent = false;
+
     @Builder
-    public Squad(User user, SquadRequest req) {
+    private Squad(User user, SquadRequest req) {
         this.user = user;
         this.category = req.getCategory();
         this.title = req.getTitle();
@@ -104,6 +108,10 @@ public class Squad extends BaseEntity {
         this.maxAge = req.getMaxAge();
         this.date = req.getDate();
         this.currentCount = 1;
+    }
+
+    public static Squad create(User user, SquadRequest req) {
+        return new Squad(user, req);
     }
 
     public void update(SquadRequest req) {
@@ -165,5 +173,12 @@ public class Squad extends BaseEntity {
     public boolean isOnlyOneLeft() {
         return participants.stream().filter(participant -> participant.getStatus() == SquadParticipationStatus.JOINED)
                 .count() == 1;
+    }
+
+    public LocalDateTime resolveMeetingDateTime() {
+        if (time == null) {
+            return LocalDateTime.of(date, LocalTime.of(8, 0, 0));
+        }
+        return LocalDateTime.of(date, time);
     }
 }

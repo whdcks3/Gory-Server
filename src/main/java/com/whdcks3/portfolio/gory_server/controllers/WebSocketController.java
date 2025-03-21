@@ -1,25 +1,29 @@
 package com.whdcks3.portfolio.gory_server.controllers;
 
-import java.security.Principal;
+import java.time.LocalDateTime;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
 
-import com.whdcks3.portfolio.gory_server.config.WebSocketHandler;
+import com.whdcks3.portfolio.gory_server.data.dto.SquadChatRequestDto;
 import com.whdcks3.portfolio.gory_server.data.models.user.User;
-import com.whdcks3.portfolio.gory_server.service.WebSocketService;
+import com.whdcks3.portfolio.gory_server.service.SquadChatService;
 
 import lombok.RequiredArgsConstructor;
 
-@RestController
-@RequestMapping("/ws")
+@Controller
 @RequiredArgsConstructor
 public class WebSocketController {
+    private final SquadChatService squadChatService;
 
-    private final WebSocketHandler webSocketHandler;
-    private final WebSocketService webSocketService;
-
+    @MessageMapping("/chat.sendMessage")
+    @SendTo("/topic/squad/{squadId}")
+    public SquadChatRequestDto sendMessage(@AuthenticationPrincipal User user,
+            SquadChatRequestDto chatMessage) {
+        chatMessage.setTime(LocalDateTime.now());
+        squadChatService.saveMessage(user, chatMessage);
+        return chatMessage;
+    }
 }

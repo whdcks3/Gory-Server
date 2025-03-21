@@ -77,7 +77,16 @@ public class FirebasePublisherUtil {
         }
 
         public List<String> postToClients(MulticastMessageRepresentation message) throws FirebaseMessagingException {
+                String[] pushData = message.getData().split(",");
+                Map<String, String> dataMap = new HashMap<>();
+                dataMap.put("type", pushData[1]);
+                dataMap.put("pid", pushData[0]);
+                Notification notification = Notification.builder()
+                                .setTitle(message.getTitle())
+                                .setBody(message.getMessage())
+                                .build();
                 MulticastMessage msg = MulticastMessage.builder()
+                                .setNotification(notification)
                                 .addAllTokens(message.getRegistrationTokens())
                                 .putData("body", message.getData())
                                 .build();

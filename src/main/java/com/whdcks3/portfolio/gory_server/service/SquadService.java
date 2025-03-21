@@ -32,23 +32,19 @@ import com.whdcks3.portfolio.gory_server.repositories.BlockRespository;
 import com.whdcks3.portfolio.gory_server.repositories.SquadParticipantRepository;
 import com.whdcks3.portfolio.gory_server.repositories.SquadRepository;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
+import com.whdcks3.portfolio.gory_server.service.abtracts.ASquadService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
-public class SquadService {
+public class SquadService extends ASquadService {
+    public SquadService(SquadRepository squadRepository, SquadParticipantRepository squadParticipantRepository,
+            UserRepository userRepository, BlockRespository blockRespository,
+            FirebaseMessagingService firebaseMessagingService) {
+        super(squadRepository, squadParticipantRepository, userRepository, blockRespository, firebaseMessagingService);
+    }
 
-    private final SquadRepository squadRepository;
-
-    private final SquadParticipantRepository squadParticipantRepository;
-
-    private final UserRepository userRepository;
-
-    private final BlockRespository blockRespository;
-
-    private final FirebasePublisherUtil firebasePublisherUtil;
-
+    @Override
     public void createSquad(User user, SquadRequest req) {
         Squad squad = new Squad(user, req);
         squad = squadRepository.save(squad);
@@ -57,53 +53,29 @@ public class SquadService {
         squadParticipantRepository.save(participant);
     }
 
+    @Override
     public void modifySquad(Long uid, Long sid, SquadRequest req) {
         User user = userRepository.findById(uid).orElseThrow();
         Squad squad = squadRepository.findById(sid).orElseThrow();
         validateOwner(user, squad);
-        if (squad.getParticipants().stream()
-                .anyMatch(paritipant -> Utils.calculateAge(paritipant.getUser().getBirth()) < req.getMinAge())
-                || squad.getParticipants().stream().anyMatch(
-                        paritipant -> Utils.calculateAge(paritipant.getUser().getBirth()) > req.getMaxAge())) {
-            throw new IllegalArgumentException("이미 참여 중인 다른 나이대의 멤버가 있어서 수정이 어려워요.");
-        }
-
-        if (squad.getParticipants().stream().anyMatch(paritipant -> paritipant.getUser().getGender().equals("남성")
-                && req.getGenderRequirement() == Gender.FEMALE
-                || paritipant.getUser().getGender().equals("여성") && req.getGenderRequirement() == Gender.MALE)) {
-            throw new IllegalArgumentException("이미 참여 중인 다른 성별의 멤버가 있어서 수정이 어려워요.");
-        }
-
-        int joinedCount = (int) squad.getParticipants().stream()
-                .filter(paritipant -> paritipant.getStatus() == SquadParticipationStatus.JOINED)
-                .count();
-        if (joinedCount < req.getMaxParticipants()) {
-            throw new IllegalArgumentException(String.format("이미 %d명이 참여중이라 인원 수정이 어려워요.", joinedCount));
-        }
+        validateAgeRange(squad, req);
+        validateGender(squad, req);
+        validatePartipantsCount(squad, req);
         squad.update(req);
     }
 
+    @Override
     @Transactional
     public void deleteSquad(User user, Long sid, boolean isForcedDelete) {
         Squad squad = squadRepository.findById(sid).orElseThrow();
         validateOwner(user, squad);
 
-        if (!isForcedDelete && !squad.isOnlyOneLeft()) {
-            throw new IllegalArgumentException("멤버를 모두 내보낸 다음 삭제할 수 있어요. 멤버 닉네임 옆의 '관리'를 눌러주세요");
-        }
-        // while (squad.getParticipants().size() > 0) {
-        // squadParticipantRepository.delete(squad.getParticipants().get(0));
-        // }
+        validateDeletion(squad, isForcedDelete);
+
         List<SquadParticipant> participants = squad.getParticipants();
         squad.getParticipants().clear();
         squadParticipantRepository.deleteAll(participants);
         squadRepository.delete(squad);
-    }
-
-    public void validateOwner(User user, Squad squad) {
-        if (!user.equals(squad.getUser())) {
-            throw new MemberNotEqualsException();
-        }
     }
 
     public DataResponse mySquads(User user, Pageable pageable) {
@@ -129,48 +101,22 @@ public class SquadService {
     }
 
     // 참여하기
+    @Override
     public void joinSquad(User user, Long sqaudId) {
-        Squad squad = squadRepository.findById(sqaudId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));
-        if (squad.getParticipants().stream().anyMatch(participant -> participant.getUser() == user)) {
-            throw new IllegalArgumentException("이미 참여 중인 사용자입니다.");
-        }
-        if (squad.isClosed()) {
-            throw new IllegalArgumentException("마감된 모임입니다.");
-        }
-        if (LocalDateTime.of(squad.getDate(), squad.getTime() == null ? LocalTime.of(23, 59, 59) : squad.getTime())
-                .isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("종료된 모임입니다.");
-        }
-        if (squad.getParticipants().stream()
-                .filter(participant -> participant.getStatus() == SquadParticipationStatus.JOINED)
-                .count() >= squad.getMaxParticipants()) {
-            throw new IllegalArgumentException("참여 인원이 찼습니다.");
-        }
-        if (squad.getGenderRequirement() == Gender.MALE && user.getGender().equals("여자")
-                || squad.getGenderRequirement() == Gender.FEMALE && user.getGender().equals("남자")) {
-            throw new IllegalArgumentException("참여 가능한 성별이 아닙니다.");
-        }
-        int age = Utils.calculateAge(user.getBirth());
-        if (squad.getMinAge() > age || squad.getMaxAge() < age) {
-            throw new IllegalArgumentException("참여 가능한 연령이 아닙니다.");
-        }
+        Squad squad = findSquad(sqaudId);
+
+        validateAlreadyJoined(user, squad);
+        validateIsClosed(squad);
+        validateTimePassed(squad);
+        validateFullJoined(squad);
+        validateGender(user, squad);
+        validateAgeRange(user, squad);
 
         SquadParticipant squadParticipant = new SquadParticipant(user, squad);
-        squadParticipant.setStatus(
-                squad.getJoinType() == JoinType.APPROVAL ? SquadParticipationStatus.PENDING
-                        : SquadParticipationStatus.JOINED);
         squadParticipant = squadParticipantRepository.save(squadParticipant);
         squad.getParticipants().add(squadParticipant);
 
-        String fcmToken = squad.getUser().getFcmToken();
-        boolean isAlarm = squad.getUser().getFeedAlarm();
-        String title = "모임에 새로운 멤버가 참여했습니다.";
-        String content = String.format("회원님의 모임글 [%s]에 새로운 멤버가 참여했습니다.",
-                squad.getTitle().substring(0, Math.max(20, squad.getTitle().length())));
-        String data = squad.getPid() + ",squad";
-
-        sendPushToClient(isAlarm, fcmToken, title, content, data);
+        firebaseMessagingService.squadNewMemberJoined(squad);
     }
 
     // 승인하기
@@ -283,16 +229,5 @@ public class SquadService {
                 .collect(Collectors.toList());
         blockedUsers.addAll(blockedByUsers);
         return blockedUsers.stream().distinct().collect(Collectors.toList());
-    }
-
-    private String sendPushToClient(boolean isAlarm, String token, String title, String content, String data) {
-        if (isAlarm && token != null) {
-            try {
-                return firebasePublisherUtil.postToClient(title, content, data, token);
-            } catch (FirebaseMessagingException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
     }
 }
