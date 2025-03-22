@@ -46,17 +46,17 @@ public class SquadService extends ASquadService {
 
     @Override
     public void createSquad(User user, SquadRequest req) {
-        Squad squad = new Squad(user, req);
+        Squad squad = Squad.create(user, req);
         squad = squadRepository.save(squad);
 
-        SquadParticipant participant = new SquadParticipant(user, squad);
+        SquadParticipant participant = SquadParticipant.create(user, squad);
         squadParticipantRepository.save(participant);
     }
 
     @Override
-    public void modifySquad(Long uid, Long sid, SquadRequest req) {
+    public void modifySquad(Long uid, Long squadId, SquadRequest req) {
         User user = userRepository.findById(uid).orElseThrow();
-        Squad squad = squadRepository.findById(sid).orElseThrow();
+        Squad squad = findSquad(squadId);
         validateOwner(user, squad);
         validateAgeRange(squad, req);
         validateGender(squad, req);
@@ -66,10 +66,10 @@ public class SquadService extends ASquadService {
 
     @Override
     @Transactional
-    public void deleteSquad(User user, Long sid, boolean isForcedDelete) {
-        Squad squad = squadRepository.findById(sid).orElseThrow();
-        validateOwner(user, squad);
+    public void deleteSquad(User user, Long squadId, boolean isForcedDelete) {
+        Squad squad = findSquad(squadId);
 
+        validateOwner(user, squad);
         validateDeletion(squad, isForcedDelete);
 
         List<SquadParticipant> participants = squad.getParticipants();
@@ -112,7 +112,7 @@ public class SquadService extends ASquadService {
         validateGender(user, squad);
         validateAgeRange(user, squad);
 
-        SquadParticipant squadParticipant = new SquadParticipant(user, squad);
+        SquadParticipant squadParticipant = SquadParticipant.create(user, squad);
         squadParticipant = squadParticipantRepository.save(squadParticipant);
         squad.getParticipants().add(squadParticipant);
 
