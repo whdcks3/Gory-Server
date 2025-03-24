@@ -32,6 +32,11 @@ public abstract class ASquadService implements ISquadService {
 
     protected final FirebaseMessagingService firebaseMessagingService;
 
+    public User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+    }
+
     public Squad findSquad(Long squadId) {
         return squadRepository.findById(squadId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));

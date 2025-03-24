@@ -95,8 +95,7 @@ public class SquadService extends ASquadService {
     }
 
     public SquadDetailDto detail(User user, long squadPid) {
-        Squad squad = squadRepository.findById(squadPid)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));
+        Squad squad = findSquad(squadPid);
         return SquadDetailDto.toDto(user, squad);
     }
 
@@ -121,10 +120,8 @@ public class SquadService extends ASquadService {
 
     // 승인하기
     public void approveParticipant(User user, Long userId, Long sqaudId) {
-        Squad squad = squadRepository.findById(sqaudId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));
-        User participantUser = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+        Squad squad = findSquad(sqaudId);
+        User participantUser = findUser(userId);
 
         if (squad.getUser() != user) {
             throw new IllegalArgumentException("방장이 아닙니다. 승인 권한이 없습니다.");
@@ -143,10 +140,8 @@ public class SquadService extends ASquadService {
 
     // 거절하기
     public void rejectParticipant(User user, Long userId, Long sqaudId) {
-        Squad squad = squadRepository.findById(sqaudId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));
-        User participantUser = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+        Squad squad = findSquad(sqaudId);
+        User participantUser = findUser(userId);
 
         if (squad.getUser() != user) {
             throw new IllegalArgumentException("방장이 아닙니다. 승인 권한이 없습니다.");
@@ -160,10 +155,8 @@ public class SquadService extends ASquadService {
 
     // 내보내기
     public void kickOffParticipant(User user, Long userId, Long sqaudId) {
-        Squad squad = squadRepository.findById(sqaudId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));
-        User participantUser = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+        Squad squad = findSquad(sqaudId);
+        User participantUser = findUser(userId);
 
         if (squad.getUser() != user) {
             throw new IllegalArgumentException("방장이 아닙니다. 승인 권한이 없습니다.");
@@ -180,8 +173,7 @@ public class SquadService extends ASquadService {
     // 모임에서 나오기
     @Transactional
     public void kickOffParticipant(User user, Long sqaudId) {
-        Squad squad = squadRepository.findById(sqaudId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임을 찾을 수 없습니다."));
+        Squad squad = findSquad(sqaudId);
 
         if (squad.getUser() != user) {
             throw new IllegalArgumentException("방장이 아닙니다. 승인 권한이 없습니다.");
