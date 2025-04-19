@@ -23,12 +23,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.add(session);
-        System.out.println("새로운 연결: " + session.getId());
+        System.out.println("New Connection: " + session.getId());
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        System.out.println("받은 메시지: " + message.getPayload());
+        System.out.println("Received Message: " + message.getPayload());
         for (WebSocketSession wsSession : sessions) {
             if (wsSession.isOpen()) {
                 wsSession.sendMessage(message);
@@ -39,7 +39,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session);
-        System.out.println("연결 종료: " + session.getId() + ", 상태: " + status);
+        System.out.println("Disconnected: " + session.getId() + ", status: " + status);
     }
 
 }

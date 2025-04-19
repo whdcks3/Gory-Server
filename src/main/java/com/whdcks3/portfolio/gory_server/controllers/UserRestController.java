@@ -64,9 +64,9 @@ public class UserRestController {
         try {
             userService.sendEmailLink(email);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("오류 발생");
+            return ResponseEntity.badRequest().body("Error occurred");
         }
-        return ResponseEntity.ok("이메일 인증 완료");
+        return ResponseEntity.ok("Email verification successful");
     }
 
     @PutMapping("/modify_password")

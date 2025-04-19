@@ -19,10 +19,10 @@ public class EmailUtils {
     private JavaMailSender mailSender;
 
     public void sendVerificationEmail(String to, String token) {
-        String subject = "[고리] 회원가입 이메일 인증";
+        String subject = "[Gory] Email Verification for Sign-up";
         String verificationLink = "http://localhost:8080/api/auth/activate?token=" + token;
-        String content = "<p>회원가입을 완료하려면 아래 링크를 클릭하여 이메일을 인증해주세요.</p>"
-                + "<a href=\"" + verificationLink + "\">이메일 인증 링크</a>";
+        String content = "<p>To complete your registration, please click the link below to verify your email address.</p>"
+                + "<a href=\"" + verificationLink + "\">Email verification link</a>";
 
         try {
             MimeMessage message = mailSender.createMimeMessage();

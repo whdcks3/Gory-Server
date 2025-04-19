@@ -18,7 +18,7 @@ public class SwaggerConfig {
                 return new OpenAPI()
                                 .info(new Info()
                                                 .title("고리 API")
-                                                .description("고리 앱 API 문서")
+                                                .description("Gory App API Documentation")
                                                 .version("1.0.0")
                                                 .contact(new Contact().email("sj012944@gmail.com")
                                                                 .url("https://seojongchan-dev.com")))

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.whdcks3.portfolio.gory_server.common.EmailUtils;
 import com.whdcks3.portfolio.gory_server.data.requests.SignupRequest;
 import com.whdcks3.portfolio.gory_server.data.responses.ErrorResponse;
-import com.whdcks3.portfolio.gory_server.enums.Role;
 import com.whdcks3.portfolio.gory_server.repositories.UserRepository;
 import com.whdcks3.portfolio.gory_server.security.jwt.JwtUtils;
 import com.whdcks3.portfolio.gory_server.service.AuthService;
@@ -35,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Tag(name = "Authentication", description = "회원 인증 및 회원가입 등")
 @RestController
 @RequestMapping("/api/auth")
-public class PublicRestController {
+public class AuthRestController {
 
     @Autowired
     EmailUtils emailUtils;
@@ -127,8 +126,8 @@ public class PublicRestController {
     // 재테스트 필요
     @GetMapping("/activate")
     public ResponseEntity<?> activateUser(@RequestParam String token) {
-        return authService.activateUser(token) ? ResponseEntity.ok("계정이 활성화 되었습니다.")
-                : ResponseEntity.badRequest().body("인증 토큰이 잘못되었습니다.");
+        return authService.activateUser(token) ? ResponseEntity.ok("Your account has been activated.")
+                : ResponseEntity.badRequest().body("Invalid authentication token.");
     }
 
     // 다중인증(최대 5회) 시 계정 잠금
